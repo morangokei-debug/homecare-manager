@@ -215,46 +215,43 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
           {/* 患者フィルタ */}
           <div className="space-y-2">
             <Label className="text-slate-300">患者を絞り込み</Label>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant={patientFilter === 'all' ? 'default' : 'outline'}
-                onClick={() => setPatientFilter('all')}
-                className={patientFilter === 'all' 
-                  ? 'bg-slate-600' 
-                  : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-              >
-                すべて
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={patientFilter === 'individual' ? 'default' : 'outline'}
-                onClick={() => setPatientFilter('individual')}
-                className={patientFilter === 'individual' 
-                  ? 'bg-emerald-600' 
-                  : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-              >
-                <Home className="h-3.5 w-3.5 mr-1" />
-                個人宅
-              </Button>
-              {facilities.map((facility) => (
-                <Button
-                  key={facility.id}
-                  type="button"
-                  size="sm"
-                  variant={patientFilter === facility.id ? 'default' : 'outline'}
-                  onClick={() => setPatientFilter(facility.id)}
-                  className={patientFilter === facility.id 
-                    ? 'bg-blue-600' 
-                    : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-                >
-                  <Building2 className="h-3.5 w-3.5 mr-1" />
-                  {facility.name}
-                </Button>
-              ))}
-            </div>
+            <Select
+              value={patientFilter}
+              onValueChange={(value) => setPatientFilter(value)}
+            >
+              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <span>📋</span>
+                    <span>すべての患者</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="individual">
+                  <div className="flex items-center gap-2">
+                    <Home className="h-4 w-4 text-emerald-400" />
+                    <span>個人宅のみ</span>
+                  </div>
+                </SelectItem>
+                {facilities.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs text-slate-500 border-t border-slate-700 mt-1">
+                      施設で絞り込み
+                    </div>
+                    {facilities.map((facility) => (
+                      <SelectItem key={facility.id} value={facility.id}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-blue-400" />
+                          <span>{facility.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* 患者 */}
