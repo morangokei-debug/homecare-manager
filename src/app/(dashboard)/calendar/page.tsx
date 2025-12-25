@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { format, addMonths, subMonths, addWeeks, subWeeks, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { CalendarMonthView } from '@/components/calendar/calendar-month-view';
 import { CalendarWeekView } from '@/components/calendar/calendar-week-view';
+import { CalendarDayView } from '@/components/calendar/calendar-day-view';
 import { EventDialog } from '@/components/calendar/event-dialog';
 import { PdfExportButton } from '@/components/calendar/pdf-export-button';
 import { cn } from '@/lib/utils';
@@ -45,8 +47,10 @@ interface User {
 }
 
 export default function CalendarPage() {
+  const { data: session } = useSession();
+  const canEdit = session?.user?.role !== 'viewer';
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -63,7 +67,10 @@ export default function CalendarPage() {
 
   const fetchEvents = useCallback(async () => {
     let start: Date, end: Date;
-    if (viewMode === 'week') {
+    if (viewMode === 'day') {
+      start = currentDate;
+      end = currentDate;
+    } else if (viewMode === 'week') {
       start = startOfWeek(currentDate, { weekStartsOn: 0 });
       end = endOfWeek(currentDate, { weekStartsOn: 0 });
     } else {
@@ -99,7 +106,9 @@ export default function CalendarPage() {
   }, [events, assigneeFilter, typeFilter, statusFilter]);
 
   const handlePrev = () => {
-    if (viewMode === 'week') {
+    if (viewMode === 'day') {
+      setCurrentDate(subDays(currentDate, 1));
+    } else if (viewMode === 'week') {
       setCurrentDate(subWeeks(currentDate, 1));
     } else {
       setCurrentDate(subMonths(currentDate, 1));
@@ -107,7 +116,9 @@ export default function CalendarPage() {
   };
 
   const handleNext = () => {
-    if (viewMode === 'week') {
+    if (viewMode === 'day') {
+      setCurrentDate(addDays(currentDate, 1));
+    } else if (viewMode === 'week') {
       setCurrentDate(addWeeks(currentDate, 1));
     } else {
       setCurrentDate(addMonths(currentDate, 1));
@@ -138,13 +149,20 @@ export default function CalendarPage() {
   };
 
   const getTitle = () => {
-    if (viewMode === 'week') {
+    if (viewMode === 'day') {
+      return format(currentDate, 'yyyy年M月d日 (E)', { locale: ja });
+    } else if (viewMode === 'week') {
       const start = startOfWeek(currentDate, { weekStartsOn: 0 });
       const end = endOfWeek(currentDate, { weekStartsOn: 0 });
       return `${format(start, 'yyyy年M月d日', { locale: ja })} 〜 ${format(end, 'M月d日', { locale: ja })}`;
     }
     return format(currentDate, 'yyyy年M月', { locale: ja });
   };
+
+  // 日表示用のイベント（当日のみ）
+  const dayEvents = useMemo(() => {
+    return filteredEvents.filter((event) => isSameDay(new Date(event.date), currentDate));
+  }, [filteredEvents, currentDate]);
 
   const hasFilters = assigneeFilter !== 'all' || typeFilter !== 'all' || statusFilter !== 'all';
 
@@ -156,13 +174,15 @@ export default function CalendarPage() {
           <h1 className="text-2xl font-bold text-white">カレンダー</h1>
           <p className="text-slate-400">訪問・処方スケジュールを管理</p>
         </div>
-        <Button
-          onClick={() => handleNewEvent()}
-          className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          新規イベント
-        </Button>
+        {canEdit && (
+          <Button
+            onClick={() => handleNewEvent()}
+            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            新規イベント
+          </Button>
+        )}
       </div>
 
       {/* フィルタ */}
@@ -242,6 +262,19 @@ export default function CalendarPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setViewMode('day')}
+                className={cn(
+                  'rounded-none',
+                  viewMode === 'day'
+                    ? 'bg-slate-700 text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                )}
+              >
+                日
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setViewMode('week')}
                 className={cn(
                   'rounded-none',
@@ -297,7 +330,13 @@ export default function CalendarPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {viewMode === 'week' ? (
+          {viewMode === 'day' ? (
+            <CalendarDayView
+              currentDate={currentDate}
+              events={dayEvents}
+              onEventClick={handleEditEvent}
+            />
+          ) : viewMode === 'week' ? (
             <CalendarWeekView
               currentDate={currentDate}
               events={filteredEvents}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,8 @@ interface Facility {
 }
 
 export default function FacilitiesPage() {
+  const { data: session } = useSession();
+  const canEdit = session?.user?.role !== 'viewer';
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,12 +69,14 @@ export default function FacilitiesPage() {
           <h1 className="text-2xl font-bold text-white">施設管理</h1>
           <p className="text-slate-400">施設情報の一覧・登録・編集</p>
         </div>
-        <Link href="/facilities/new">
-          <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
-            <Plus className="h-4 w-4 mr-2" />
-            新規施設登録
-          </Button>
-        </Link>
+        {canEdit && (
+          <Link href="/facilities/new">
+            <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
+              <Plus className="h-4 w-4 mr-2" />
+              新規施設登録
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* 検索 */}

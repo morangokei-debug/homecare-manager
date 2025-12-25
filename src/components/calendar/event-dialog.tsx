@@ -23,6 +23,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Save, Trash2, Home, Building2, Copy } from 'lucide-react';
 import { createEvent, updateEvent, deleteEvent } from '@/app/actions/events';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
+import { useSession } from 'next-auth/react';
 
 interface EventDialogProps {
   open: boolean;
@@ -49,6 +50,8 @@ interface Facility {
 }
 
 export function EventDialog({ open, onClose, selectedDate, event }: EventDialogProps) {
+  const { data: session } = useSession();
+  const canEdit = session?.user?.role !== 'viewer';
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -202,7 +205,9 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{event ? 'イベント編集' : '新規イベント登録'}</DialogTitle>
+          <DialogTitle>
+            {!canEdit ? 'イベント詳細' : event ? 'イベント編集' : '新規イベント登録'}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -466,7 +471,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* ボタン */}
           <div className="flex justify-between pt-4">
-            {event ? (
+            {event && canEdit ? (
               <Button
                 type="button"
                 variant="outline"
@@ -493,22 +498,24 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 onClick={onClose}
                 className="border-slate-600"
               >
-                キャンセル
+                {canEdit ? 'キャンセル' : '閉じる'}
               </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    保存
-                  </>
-                )}
-              </Button>
+              {canEdit && (
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      保存
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </form>

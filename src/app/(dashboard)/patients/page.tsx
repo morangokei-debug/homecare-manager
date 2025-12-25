@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,8 @@ interface Patient {
 }
 
 export default function PatientsPage() {
+  const { data: session } = useSession();
+  const canEdit = session?.user?.role !== 'viewer';
   const [patients, setPatients] = useState<Patient[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,12 +69,14 @@ export default function PatientsPage() {
           <h1 className="text-2xl font-bold text-white">患者管理</h1>
           <p className="text-slate-400">患者情報の一覧・登録・編集</p>
         </div>
-        <Link href="/patients/new">
-          <Button className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
-            <Plus className="h-4 w-4 mr-2" />
-            新規患者登録
-          </Button>
-        </Link>
+        {canEdit && (
+          <Link href="/patients/new">
+            <Button className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+              <Plus className="h-4 w-4 mr-2" />
+              新規患者登録
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* 検索 */}
