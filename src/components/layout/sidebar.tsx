@@ -7,19 +7,13 @@ import {
   CalendarDays,
   Users,
   Building2,
-  Bell,
-  FileText,
   Settings,
-  Home,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'カレンダー', href: '/calendar', icon: CalendarDays },
-  { name: 'イベント一覧', href: '/events', icon: Home },
   { name: '患者管理', href: '/patients', icon: Users },
   { name: '施設管理', href: '/facilities', icon: Building2 },
-  { name: 'リマインド', href: '/reminders', icon: Bell },
-  { name: 'PDF出力', href: '/pdf', icon: FileText },
   { name: '設定', href: '/settings', icon: Settings },
 ];
 
