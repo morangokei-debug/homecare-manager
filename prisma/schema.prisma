@@ -60,6 +60,9 @@ model User {
   summariesAsCreator              PatientSummary[] @relation("SummaryCreator")
   summariesAsUpdater              PatientSummary[] @relation("SummaryUpdater")
   summaryHistories                PatientSummaryHistory[]
+  
+  // 患者ドキュメント関連
+  uploadedDocuments PatientDocument[]
 
   @@index([role])
   @@index([isActive])
@@ -103,9 +106,10 @@ model Patient {
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  facility Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
-  events   Event[]
-  summary  PatientSummary?
+  facility  Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  events    Event[]
+  summary   PatientSummary?
+  documents PatientDocument[]
 
   @@index([name])
   @@index([nameKana])
@@ -260,4 +264,39 @@ model PatientSummaryHistory {
   @@index([summaryId])
   @@index([changedAt])
   @@map("patient_summary_histories")
+}
+
+// ============================================
+// 患者ドキュメント（ファイル保管）
+// ============================================
+
+enum DocumentType {
+  facesheet      // フェイスシート
+  report         // 他職種からの報告書
+  prescription   // 処方箋
+  consent        // 同意書
+  photo          // 写真（傷の経過など）
+  other          // その他
+}
+
+model PatientDocument {
+  id          String       @id @default(uuid())
+  patientId   String       @map("patient_id")
+  type        DocumentType @default(other)
+  fileName    String       @map("file_name")
+  fileSize    Int          @map("file_size")
+  mimeType    String       @map("mime_type")
+  storagePath String       @map("storage_path")  // Supabase Storage内のパス
+  description String?      @db.VarChar(200)
+  uploadedBy  String       @map("uploaded_by")
+  uploadedAt  DateTime     @default(now()) @map("uploaded_at")
+
+  // Relations
+  patient  Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  uploader User    @relation(fields: [uploadedBy], references: [id])
+
+  @@index([patientId])
+  @@index([type])
+  @@index([uploadedAt])
+  @@map("patient_documents")
 }

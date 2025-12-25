@@ -13,6 +13,7 @@ import { ArrowLeft, Save, Loader2, Trash2, FileDown } from 'lucide-react';
 import Link from 'next/link';
 import { updatePatient, deletePatient } from '@/app/actions/patients';
 import { PatientSummary } from '@/components/patient/patient-summary';
+import { PatientDocuments } from '@/components/patient/patient-documents';
 import { ApproachType } from '@prisma/client';
 
 interface Facility {
@@ -301,6 +302,9 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
           </CardContent>
         </Card>
       </form>
+
+      {/* ドキュメント・写真 */}
+      <PatientDocuments patientId={patient.id} />
     </div>
   );
 }

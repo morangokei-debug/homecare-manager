@@ -20,10 +20,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Trash2, Home, Building2, Copy } from 'lucide-react';
+import { Loader2, Save, Trash2, Home, Building2, Copy, ExternalLink } from 'lucide-react';
 import { createEvent, updateEvent, deleteEvent } from '@/app/actions/events';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 interface EventDialogProps {
   open: boolean;
@@ -325,39 +326,54 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 ({filteredPatients.length}名)
               </span>
             </Label>
-            <Select
-              value={formData.patientId}
-              onValueChange={(value) => setFormData({ ...formData, patientId: value })}
-              required
-            >
-              <SelectTrigger className="bg-slate-700/50 border-slate-600">
-                <SelectValue placeholder="患者を選択" />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredPatients.map((patient) => (
-                  <SelectItem key={patient.id} value={patient.id}>
-                    <div className="flex items-center gap-2">
-                      {patient.facility ? (
-                        <Building2 className="h-3.5 w-3.5 text-blue-400" />
-                      ) : (
-                        <Home className="h-3.5 w-3.5 text-emerald-400" />
-                      )}
-                      <span>{patient.name}</span>
-                      {patient.facility && (
-                        <span className="text-xs text-slate-400">
-                          ({patient.facility.name})
-                        </span>
-                      )}
+            <div className="flex gap-2">
+              <Select
+                value={formData.patientId}
+                onValueChange={(value) => setFormData({ ...formData, patientId: value })}
+                required
+              >
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 flex-1">
+                  <SelectValue placeholder="患者を選択" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredPatients.map((patient) => (
+                    <SelectItem key={patient.id} value={patient.id}>
+                      <div className="flex items-center gap-2">
+                        {patient.facility ? (
+                          <Building2 className="h-3.5 w-3.5 text-blue-400" />
+                        ) : (
+                          <Home className="h-3.5 w-3.5 text-emerald-400" />
+                        )}
+                        <span>{patient.name}</span>
+                        {patient.facility && (
+                          <span className="text-xs text-slate-400">
+                            ({patient.facility.name})
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                  {filteredPatients.length === 0 && (
+                    <div className="px-2 py-4 text-center text-slate-500 text-sm">
+                      該当する患者がいません
                     </div>
-                  </SelectItem>
-                ))}
-                {filteredPatients.length === 0 && (
-                  <div className="px-2 py-4 text-center text-slate-500 text-sm">
-                    該当する患者がいません
-                  </div>
-                )}
-              </SelectContent>
-            </Select>
+                  )}
+                </SelectContent>
+              </Select>
+              {formData.patientId && (
+                <Link href={`/patients/${formData.patientId}`} target="_blank">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="border-slate-600 hover:bg-slate-700"
+                    title="患者詳細を見る"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* 担当者 */}
