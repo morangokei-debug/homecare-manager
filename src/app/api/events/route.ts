@@ -21,25 +21,23 @@ export async function GET(request: Request) {
         select: { id: true, name: true },
       },
     },
-    orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+    orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
   const formattedEvents = events.map((event) => ({
     id: event.id,
     type: event.type,
     date: event.date.toISOString().split('T')[0],
-    startTime: event.startTime,
-    endTime: event.endTime,
+    time: event.time ? event.time.toISOString().split('T')[1].slice(0, 5) : null,
     patientId: event.patientId,
     patientName: event.patient.name,
     facilityName: event.patient.facility?.name || null,
-    displayMode: event.patient.displayMode,
-    assigneeId: event.assigneeId,
+    displayMode: event.patient.facility?.displayMode || 'individual',
+    assigneeId: event.assignedTo,
     assigneeName: event.assignee?.name || null,
-    notes: event.notes,
+    notes: event.memo,
     isCompleted: event.isCompleted,
   }));
 
   return NextResponse.json(formattedEvents);
 }
-

@@ -16,8 +16,7 @@ export interface CalendarEvent {
   id: string;
   type: 'visit' | 'prescription';
   date: string;
-  startTime: string | null;
-  endTime: string | null;
+  time: string | null;
   patientId: string;
   patientName: string;
   facilityName: string | null;

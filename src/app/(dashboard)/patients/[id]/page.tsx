@@ -24,9 +24,8 @@ interface Patient {
   phone: string | null;
   address: string | null;
   area: string | null;
-  notes: string | null;
+  memo: string | null;
   facilityId: string | null;
-  displayMode: string;
 }
 
 export default function EditPatientPage({ params }: { params: Promise<{ id: string }> }) {
@@ -150,39 +149,23 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="facilityId" className="text-slate-300">
-                  所属施設
-                </Label>
-                <Select name="facilityId" defaultValue={patient.facilityId || 'none'}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
-                    <SelectValue placeholder="個人宅（施設なし）" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">個人宅（施設なし）</SelectItem>
-                    {facilities.map((facility) => (
-                      <SelectItem key={facility.id} value={facility.id}>
-                        {facility.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="displayMode" className="text-slate-300">
-                  カレンダー表示
-                </Label>
-                <Select name="displayMode" defaultValue={patient.displayMode}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">個人名で表示</SelectItem>
-                    <SelectItem value="facility">施設名で表示</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="facilityId" className="text-slate-300">
+                所属施設
+              </Label>
+              <Select name="facilityId" defaultValue={patient.facilityId || 'none'}>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                  <SelectValue placeholder="個人宅（施設なし）" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">個人宅（施設なし）</SelectItem>
+                  {facilities.map((facility) => (
+                    <SelectItem key={facility.id} value={facility.id}>
+                      {facility.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -230,7 +213,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
               <Textarea
                 id="notes"
                 name="notes"
-                defaultValue={patient.notes || ''}
+                defaultValue={patient.memo || ''}
                 rows={4}
                 className="bg-slate-700/50 border-slate-600 text-white resize-none"
               />
@@ -266,4 +249,3 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
     </div>
   );
 }
-

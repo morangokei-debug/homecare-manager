@@ -51,8 +51,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
   const [formData, setFormData] = useState({
     type: 'visit' as 'visit' | 'prescription',
     date: '',
-    startTime: '',
-    endTime: '',
+    time: '',
     patientId: '',
     assigneeId: '',
     notes: '',
@@ -76,8 +75,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
       setFormData({
         type: event.type,
         date: event.date,
-        startTime: event.startTime || '',
-        endTime: event.endTime || '',
+        time: event.time || '',
         patientId: event.patientId,
         assigneeId: event.assigneeId || '',
         notes: event.notes || '',
@@ -87,8 +85,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
       setFormData({
         type: 'visit',
         date: format(selectedDate, 'yyyy-MM-dd'),
-        startTime: '',
-        endTime: '',
+        time: '',
         patientId: '',
         assigneeId: '',
         notes: '',
@@ -102,9 +99,13 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     setLoading(true);
 
     const data = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      data.append(key, String(value));
-    });
+    data.append('type', formData.type);
+    data.append('date', formData.date);
+    data.append('time', formData.time);
+    data.append('patientId', formData.patientId);
+    data.append('assigneeId', formData.assigneeId);
+    data.append('notes', formData.notes);
+    data.append('isCompleted', String(formData.isCompleted));
 
     let result;
     if (event) {
@@ -165,7 +166,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* 日付 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">日付</Label>
+            <Label className="text-slate-300">日付 <span className="text-red-400">*</span></Label>
             <Input
               type="date"
               value={formData.date}
@@ -175,31 +176,23 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
             />
           </div>
 
-          {/* 時間 */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-slate-300">開始時間</Label>
-              <Input
-                type="time"
-                value={formData.startTime}
-                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                className="bg-slate-700/50 border-slate-600"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-slate-300">終了時間</Label>
-              <Input
-                type="time"
-                value={formData.endTime}
-                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                className="bg-slate-700/50 border-slate-600"
-              />
-            </div>
+          {/* 予定時刻（任意） */}
+          <div className="space-y-2">
+            <Label className="text-slate-300">
+              予定時刻
+              <span className="text-slate-500 text-xs ml-2">（任意：空欄でタスクとして登録）</span>
+            </Label>
+            <Input
+              type="time"
+              value={formData.time}
+              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              className="bg-slate-700/50 border-slate-600"
+            />
           </div>
 
           {/* 患者 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">患者</Label>
+            <Label className="text-slate-300">患者 <span className="text-red-400">*</span></Label>
             <Select
               value={formData.patientId}
               onValueChange={(value) => setFormData({ ...formData, patientId: value })}
@@ -319,4 +312,3 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     </Dialog>
   );
 }
-

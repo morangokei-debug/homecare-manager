@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import { jsPDF } from 'jspdf';
 
-// 日本語フォント用に明朝体のBase64を使わずにシンプルなテキスト出力
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const start = searchParams.get('start');
@@ -29,7 +27,7 @@ export async function GET(request: Request) {
         select: { name: true },
       },
     },
-    orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+    orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
   // PDFを生成（横向き）
@@ -48,7 +46,7 @@ export async function GET(request: Request) {
 
   // テーブルデータの準備
   const tableData = events.map((event) => {
-    const displayName = event.patient.displayMode === 'facility' && event.patient.facility
+    const displayName = event.patient.facility?.displayMode === 'grouped' && event.patient.facility
       ? event.patient.facility.name
       : event.patient.name;
 
@@ -56,7 +54,7 @@ export async function GET(request: Request) {
       format(event.date, 'yyyy-MM-dd'),
       event.type === 'visit' ? 'Visit' : 'Prescription',
       displayName,
-      event.startTime ? `${event.startTime.slice(0, 5)}${event.endTime ? ' - ' + event.endTime.slice(0, 5) : ''}` : '-',
+      event.time ? event.time.toISOString().split('T')[1].slice(0, 5) : '-',
       event.assignee?.name || '-',
       event.isCompleted ? 'Done' : 'Pending',
     ];
@@ -125,4 +123,3 @@ export async function GET(request: Request) {
     },
   });
 }
-

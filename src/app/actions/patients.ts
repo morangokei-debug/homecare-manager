@@ -12,7 +12,6 @@ export async function createPatient(formData: FormData) {
     const area = formData.get('area') as string | null;
     const notes = formData.get('notes') as string | null;
     const facilityId = formData.get('facilityId') as string;
-    const displayMode = formData.get('displayMode') as string;
 
     await prisma.patient.create({
       data: {
@@ -21,9 +20,8 @@ export async function createPatient(formData: FormData) {
         phone: phone || null,
         address: address || null,
         area: area || null,
-        notes: notes || null,
+        memo: notes || null,
         facilityId: facilityId && facilityId !== 'none' ? facilityId : null,
-        displayMode: displayMode || 'individual',
       },
     });
 
@@ -45,7 +43,6 @@ export async function updatePatient(formData: FormData) {
     const area = formData.get('area') as string | null;
     const notes = formData.get('notes') as string | null;
     const facilityId = formData.get('facilityId') as string;
-    const displayMode = formData.get('displayMode') as string;
 
     await prisma.patient.update({
       where: { id },
@@ -55,9 +52,8 @@ export async function updatePatient(formData: FormData) {
         phone: phone || null,
         address: address || null,
         area: area || null,
-        notes: notes || null,
+        memo: notes || null,
         facilityId: facilityId && facilityId !== 'none' ? facilityId : null,
-        displayMode: displayMode || 'individual',
       },
     });
 
@@ -84,4 +80,3 @@ export async function deletePatient(id: string) {
     return { success: false, error: '患者の削除に失敗しました' };
   }
 }
-

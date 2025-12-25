@@ -120,7 +120,7 @@ function EventBadge({ event, onClick }: { event: CalendarEvent; onClick: (e: Rea
       )}
     >
       <span className="mr-1">{icon}</span>
-      {event.startTime && <span className="mr-1 opacity-70">{event.startTime.slice(0, 5)}</span>}
+      {event.time && <span className="mr-1 opacity-70">{event.time}</span>}
       <span className="truncate">{displayName}</span>
     </Badge>
   );

@@ -24,10 +24,10 @@ export function CalendarWeekView({ currentDate, events, onDateClick, onEventClic
     return events
       .filter((event) => isSameDay(new Date(event.date), date))
       .sort((a, b) => {
-        if (!a.startTime && !b.startTime) return 0;
-        if (!a.startTime) return 1;
-        if (!b.startTime) return -1;
-        return a.startTime.localeCompare(b.startTime);
+        if (!a.time && !b.time) return 0;
+        if (!a.time) return 1;
+        if (!b.time) return -1;
+        return a.time.localeCompare(b.time);
       });
   };
 
@@ -151,10 +151,9 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
       >
         {displayName}
       </div>
-      {event.startTime && (
+      {event.time && (
         <div className="text-xs text-slate-400 mt-1">
-          {event.startTime.slice(0, 5)}
-          {event.endTime && ` 〜 ${event.endTime.slice(0, 5)}`}
+          {event.time}
         </div>
       )}
       {event.assigneeName && (
