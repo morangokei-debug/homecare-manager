@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Trash2, FileDown } from 'lucide-react';
 import Link from 'next/link';
 import { updatePatient, deletePatient } from '@/app/actions/patients';
 import { PatientSummary } from '@/components/patient/patient-summary';
@@ -133,23 +133,33 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
             <p className="text-slate-400">{patient.name}</p>
           </div>
         </div>
-        {canEdit && (
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+            onClick={() => window.open(`/api/pdf/patient-summary?patientId=${patient.id}`, '_blank')}
+            className="border-slate-600"
           >
-            {deleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Trash2 className="h-4 w-4 mr-2" />
-                削除
-              </>
-            )}
+            <FileDown className="h-4 w-4 mr-2" />
+            PDF出力
           </Button>
-        )}
+          {canEdit && (
+            <Button
+              variant="outline"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+            >
+              {deleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  削除
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 引き継ぎサマリー（必読）*/}
