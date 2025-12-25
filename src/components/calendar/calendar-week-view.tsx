@@ -116,10 +116,6 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
     ? event.displayMode === 'facility' && event.facilityName ? '🏢' : '🏠'
     : '💊';
 
-  // 書類チェックの状態
-  const docsComplete = event.reportDone && event.planDone;
-  const docsSomeComplete = event.reportDone || event.planDone;
-
   return (
     <div
       onClick={onClick}
@@ -127,8 +123,7 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
         'p-2 rounded-lg cursor-pointer transition-colors',
         event.type === 'visit'
           ? 'bg-emerald-500/20 hover:bg-emerald-500/30'
-          : 'bg-purple-500/20 hover:bg-purple-500/30',
-        event.isCompleted && 'opacity-50'
+          : 'bg-purple-500/20 hover:bg-purple-500/30'
       )}
     >
       <div className="flex items-center gap-2">
@@ -141,18 +136,12 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
         >
           {event.type === 'visit' ? '訪問' : '処方'}
         </span>
-        {event.isCompleted && (
-          <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
-            完了
-          </Badge>
+        {/* 報告書ステータス（メイン） */}
+        {event.reportDone && (
+          <span className="text-green-400 text-xs" title="報告書済">✓</span>
         )}
       </div>
-      <div
-        className={cn(
-          'text-sm font-medium mt-1 text-white',
-          event.isCompleted && 'line-through'
-        )}
-      >
+      <div className="text-sm font-medium mt-1 text-white">
         {displayName}
       </div>
       {event.time && (
@@ -165,27 +154,6 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
           担当: {event.assigneeName}
         </div>
       )}
-      {/* 書類ステータス */}
-      <div className="flex items-center gap-1 mt-1.5">
-        <span
-          className={cn(
-            'text-xs',
-            event.reportDone ? 'text-green-400' : 'text-slate-600'
-          )}
-          title={event.reportDone ? '報告書済' : '報告書未'}
-        >
-          📄{event.reportDone ? '✓' : ''}
-        </span>
-        <span
-          className={cn(
-            'text-xs',
-            event.planDone ? 'text-green-400' : 'text-slate-600'
-          )}
-          title={event.planDone ? '計画書済' : '計画書未'}
-        >
-          📋{event.planDone ? '✓' : ''}
-        </span>
-      </div>
     </div>
   );
 }

@@ -433,22 +433,9 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
             />
           </div>
 
-          {/* 完了・書類チェック */}
+          {/* 書類チェック */}
           {event && (
             <div className="space-y-3 p-3 rounded-lg bg-slate-700/30 border border-slate-600">
-              <p className="text-sm text-slate-400">ステータス・書類</p>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isCompleted"
-                  checked={formData.isCompleted}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, isCompleted: checked as boolean })
-                  }
-                />
-                <Label htmlFor="isCompleted" className="text-slate-300">
-                  完了済み
-                </Label>
-              </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="reportDone"
@@ -457,20 +444,21 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                     setFormData({ ...formData, reportDone: checked as boolean })
                   }
                 />
-                <Label htmlFor="reportDone" className="text-slate-300">
+                <Label htmlFor="reportDone" className="text-white font-medium">
                   📄 報告書 記載済み
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 pl-1">
                 <Checkbox
                   id="planDone"
                   checked={formData.planDone}
                   onCheckedChange={(checked) =>
                     setFormData({ ...formData, planDone: checked as boolean })
                   }
+                  className="h-3.5 w-3.5"
                 />
-                <Label htmlFor="planDone" className="text-slate-300">
-                  📋 計画書 記載済み
+                <Label htmlFor="planDone" className="text-slate-400 text-sm">
+                  📋 計画書 記載済み（該当時のみ）
                 </Label>
               </div>
             </div>
