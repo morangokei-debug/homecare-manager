@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { format, addMonths, subMonths, addWeeks, subWeeks, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import { CalendarMonthView } from '@/components/calendar/calendar-month-view';
 import { CalendarWeekView } from '@/components/calendar/calendar-week-view';
 import { EventDialog } from '@/components/calendar/event-dialog';
@@ -24,7 +31,15 @@ export interface CalendarEvent {
   assigneeId: string | null;
   assigneeName: string | null;
   notes: string | null;
+  status: 'draft' | 'confirmed';
   isCompleted: boolean;
+  isRecurring: boolean;
+  recurringInterval: number | null;
+}
+
+interface User {
+  id: string;
+  name: string;
 }
 
 export default function CalendarPage() {
@@ -34,6 +49,15 @@ export default function CalendarPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // ユーザー一覧取得
+  useEffect(() => {
+    fetch('/api/users').then((res) => res.json()).then(setUsers);
+  }, []);
 
   const fetchEvents = useCallback(async () => {
     let start: Date, end: Date;
@@ -55,6 +79,22 @@ export default function CalendarPage() {
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
+
+  // フィルタリングされたイベント
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      // 担当者フィルタ
+      if (assigneeFilter !== 'all') {
+        if (assigneeFilter === 'unassigned' && event.assigneeId) return false;
+        if (assigneeFilter !== 'unassigned' && event.assigneeId !== assigneeFilter) return false;
+      }
+      // 種別フィルタ
+      if (typeFilter !== 'all' && event.type !== typeFilter) return false;
+      // ステータスフィルタ
+      if (statusFilter !== 'all' && event.status !== statusFilter) return false;
+      return true;
+    });
+  }, [events, assigneeFilter, typeFilter, statusFilter]);
 
   const handlePrev = () => {
     if (viewMode === 'week') {
@@ -104,6 +144,8 @@ export default function CalendarPage() {
     return format(currentDate, 'yyyy年M月', { locale: ja });
   };
 
+  const hasFilters = assigneeFilter !== 'all' || typeFilter !== 'all' || statusFilter !== 'all';
+
   return (
     <div className="space-y-6">
       {/* ページヘッダー */}
@@ -119,6 +161,70 @@ export default function CalendarPage() {
           <Plus className="h-4 w-4 mr-2" />
           新規イベント
         </Button>
+      </div>
+
+      {/* フィルタ */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex items-center gap-2 text-slate-400">
+          <Filter className="h-4 w-4" />
+          <span className="text-sm">フィルタ:</span>
+        </div>
+        {/* 担当者 */}
+        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+          <SelectTrigger className="w-[160px] bg-slate-800/50 border-slate-700 text-white">
+            <SelectValue placeholder="担当者" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全担当者</SelectItem>
+            <SelectItem value="unassigned">未割当</SelectItem>
+            {users.map((user) => (
+              <SelectItem key={user.id} value={user.id}>
+                {user.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {/* 種別 */}
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700 text-white">
+            <SelectValue placeholder="種別" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全種別</SelectItem>
+            <SelectItem value="visit">🏠 訪問</SelectItem>
+            <SelectItem value="prescription">💊 処方</SelectItem>
+          </SelectContent>
+        </Select>
+        {/* ステータス */}
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700 text-white">
+            <SelectValue placeholder="ステータス" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全ステータス</SelectItem>
+            <SelectItem value="draft">📝 下書き</SelectItem>
+            <SelectItem value="confirmed">✅ 確定</SelectItem>
+          </SelectContent>
+        </Select>
+        {hasFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setAssigneeFilter('all');
+              setTypeFilter('all');
+              setStatusFilter('all');
+            }}
+            className="text-slate-400 hover:text-white"
+          >
+            クリア
+          </Button>
+        )}
+        {hasFilters && (
+          <span className="text-sm text-slate-500">
+            ({filteredEvents.length}/{events.length}件表示)
+          </span>
+        )}
       </div>
 
       {/* カレンダーカード */}
@@ -192,14 +298,14 @@ export default function CalendarPage() {
           {viewMode === 'week' ? (
             <CalendarWeekView
               currentDate={currentDate}
-              events={events}
+              events={filteredEvents}
               onDateClick={handleNewEvent}
               onEventClick={handleEditEvent}
             />
           ) : (
             <CalendarMonthView
               currentDate={currentDate}
-              events={events}
+              events={filteredEvents}
               onDateClick={handleNewEvent}
               onEventClick={handleEditEvent}
             />

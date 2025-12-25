@@ -1,17 +1,62 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Home, Building2, Phone, MapPin } from 'lucide-react';
+import { Plus, Search, Home, Building2, Phone, MapPin, Loader2 } from 'lucide-react';
 
-export default async function PatientsPage() {
-  const patients = await prisma.patient.findMany({
-    where: { isActive: true },
-    include: { facility: true },
-    orderBy: { nameKana: 'asc' },
-  });
+interface Patient {
+  id: string;
+  name: string;
+  nameKana: string | null;
+  phone: string | null;
+  area: string | null;
+  facility: { id: string; name: string } | null;
+}
+
+export default function PatientsPage() {
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/patients/list')
+      .then((res) => res.json())
+      .then((data) => {
+        setPatients(data);
+        setFilteredPatients(data);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredPatients(patients);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = patients.filter(
+      (patient) =>
+        patient.name.toLowerCase().includes(query) ||
+        patient.nameKana?.toLowerCase().includes(query) ||
+        patient.area?.toLowerCase().includes(query) ||
+        patient.facility?.name.toLowerCase().includes(query)
+    );
+    setFilteredPatients(filtered);
+  }, [searchQuery, patients]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -35,16 +80,23 @@ export default async function PatientsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="患者名、カナ、住所で検索..."
+              placeholder="患者名、カナ、エリア、施設名で検索..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
             />
           </div>
+          {searchQuery && (
+            <p className="mt-2 text-sm text-slate-400">
+              {filteredPatients.length}件の結果
+            </p>
+          )}
         </CardContent>
       </Card>
 
       {/* 患者一覧 */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {patients.map((patient) => (
+        {filteredPatients.map((patient) => (
           <Link key={patient.id} href={`/patients/${patient.id}`}>
             <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors cursor-pointer h-full">
               <CardHeader className="pb-3">
@@ -103,20 +155,23 @@ export default async function PatientsPage() {
         ))}
       </div>
 
-      {patients.length === 0 && (
+      {filteredPatients.length === 0 && (
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="py-12 text-center">
-            <p className="text-slate-400">患者が登録されていません</p>
-            <Link href="/patients/new">
-              <Button className="mt-4" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                最初の患者を登録
-              </Button>
-            </Link>
+            <p className="text-slate-400">
+              {searchQuery ? '検索結果がありません' : '患者が登録されていません'}
+            </p>
+            {!searchQuery && (
+              <Link href="/patients/new">
+                <Button className="mt-4" variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  最初の患者を登録
+                </Button>
+              </Link>
+            )}
           </CardContent>
         </Card>
       )}
     </div>
   );
 }
-

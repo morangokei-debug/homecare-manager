@@ -1,21 +1,62 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Building2, Phone, MapPin, Users } from 'lucide-react';
+import { Plus, Search, Building2, Phone, MapPin, Users, Loader2 } from 'lucide-react';
 
-export default async function FacilitiesPage() {
-  const facilities = await prisma.facility.findMany({
-    where: { isActive: true },
-    include: {
-      _count: {
-        select: { patients: { where: { isActive: true } } },
-      },
-    },
-    orderBy: { name: 'asc' },
-  });
+interface Facility {
+  id: string;
+  name: string;
+  area: string | null;
+  address: string | null;
+  phone: string | null;
+  displayMode: string;
+  _count: { patients: number };
+}
+
+export default function FacilitiesPage() {
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/facilities/list')
+      .then((res) => res.json())
+      .then((data) => {
+        setFacilities(data);
+        setFilteredFacilities(data);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredFacilities(facilities);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = facilities.filter(
+      (facility) =>
+        facility.name.toLowerCase().includes(query) ||
+        facility.area?.toLowerCase().includes(query) ||
+        facility.address?.toLowerCase().includes(query)
+    );
+    setFilteredFacilities(filtered);
+  }, [searchQuery, facilities]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -39,16 +80,23 @@ export default async function FacilitiesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="施設名、住所で検索..."
+              placeholder="施設名、エリア、住所で検索..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
             />
           </div>
+          {searchQuery && (
+            <p className="mt-2 text-sm text-slate-400">
+              {filteredFacilities.length}件の結果
+            </p>
+          )}
         </CardContent>
       </Card>
 
       {/* 施設一覧 */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {facilities.map((facility) => (
+        {filteredFacilities.map((facility) => (
           <Link key={facility.id} href={`/facilities/${facility.id}`}>
             <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors cursor-pointer h-full">
               <CardHeader className="pb-3">
@@ -71,6 +119,18 @@ export default async function FacilitiesPage() {
                   <Users className="h-3.5 w-3.5" />
                   <span>患者数: {facility._count.patients}名</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className={
+                      facility.displayMode === 'grouped'
+                        ? 'border-purple-500/50 text-purple-400 bg-purple-500/10'
+                        : 'border-cyan-500/50 text-cyan-400 bg-cyan-500/10'
+                    }
+                  >
+                    {facility.displayMode === 'grouped' ? 'まとめ表示' : '個別表示'}
+                  </Badge>
+                </div>
                 {facility.address && (
                   <div className="flex items-center gap-2 text-slate-400">
                     <MapPin className="h-3.5 w-3.5" />
@@ -89,20 +149,23 @@ export default async function FacilitiesPage() {
         ))}
       </div>
 
-      {facilities.length === 0 && (
+      {filteredFacilities.length === 0 && (
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="py-12 text-center">
-            <p className="text-slate-400">施設が登録されていません</p>
-            <Link href="/facilities/new">
-              <Button className="mt-4" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                最初の施設を登録
-              </Button>
-            </Link>
+            <p className="text-slate-400">
+              {searchQuery ? '検索結果がありません' : '施設が登録されていません'}
+            </p>
+            {!searchQuery && (
+              <Link href="/facilities/new">
+                <Button className="mt-4" variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  最初の施設を登録
+                </Button>
+              </Link>
+            )}
           </CardContent>
         </Card>
       )}
     </div>
   );
 }
-

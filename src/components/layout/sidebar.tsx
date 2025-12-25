@@ -8,12 +8,16 @@ import {
   Users,
   Building2,
   Settings,
+  List,
+  Bell,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'カレンダー', href: '/calendar', icon: CalendarDays },
+  { name: 'イベント一覧', href: '/events', icon: List },
   { name: '患者管理', href: '/patients', icon: Users },
   { name: '施設管理', href: '/facilities', icon: Building2 },
+  { name: 'リマインド', href: '/reminders', icon: Bell },
   { name: '設定', href: '/settings', icon: Settings },
 ];
 

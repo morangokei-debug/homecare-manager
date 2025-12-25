@@ -36,7 +36,10 @@ export async function GET(request: Request) {
     assigneeId: event.assignedTo,
     assigneeName: event.assignee?.name || null,
     notes: event.memo,
+    status: event.status,
     isCompleted: event.isCompleted,
+    isRecurring: event.isRecurring,
+    recurringInterval: event.recurringInterval,
   }));
 
   return NextResponse.json(formattedEvents);

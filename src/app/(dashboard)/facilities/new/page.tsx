@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { createFacility } from '@/app/actions/facilities';
@@ -104,6 +105,36 @@ export default function NewFacilityPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="contactPerson" className="text-slate-300">
+                担当者名
+              </Label>
+              <Input
+                id="contactPerson"
+                name="contactPerson"
+                placeholder="田中 太郎"
+                className="bg-slate-700/50 border-slate-600 text-white"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="displayMode" className="text-slate-300">
+                カレンダー表示モード
+              </Label>
+              <Select name="displayMode" defaultValue="grouped">
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="grouped">施設名でまとめ表示</SelectItem>
+                  <SelectItem value="individual">患者ごとに個別表示</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-500">
+                「まとめ表示」は施設内の複数患者を1つにまとめます。「個別表示」は患者ごとに表示します。
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="notes" className="text-slate-300">
                 備考
               </Label>
@@ -146,4 +177,3 @@ export default function NewFacilityPage() {
     </div>
   );
 }
-

@@ -9,6 +9,8 @@ export async function createFacility(formData: FormData) {
     const phone = formData.get('phone') as string | null;
     const address = formData.get('address') as string | null;
     const area = formData.get('area') as string | null;
+    const contactPerson = formData.get('contactPerson') as string | null;
+    const displayMode = formData.get('displayMode') as string;
     const notes = formData.get('notes') as string | null;
 
     await prisma.facility.create({
@@ -17,7 +19,9 @@ export async function createFacility(formData: FormData) {
         phone: phone || null,
         address: address || null,
         area: area || null,
-        notes: notes || null,
+        contactPerson: contactPerson || null,
+        displayMode: (displayMode as 'grouped' | 'individual') || 'grouped',
+        memo: notes || null,
       },
     });
 
@@ -36,6 +40,8 @@ export async function updateFacility(formData: FormData) {
     const phone = formData.get('phone') as string | null;
     const address = formData.get('address') as string | null;
     const area = formData.get('area') as string | null;
+    const contactPerson = formData.get('contactPerson') as string | null;
+    const displayMode = formData.get('displayMode') as string;
     const notes = formData.get('notes') as string | null;
 
     await prisma.facility.update({
@@ -45,7 +51,9 @@ export async function updateFacility(formData: FormData) {
         phone: phone || null,
         address: address || null,
         area: area || null,
-        notes: notes || null,
+        contactPerson: contactPerson || null,
+        displayMode: (displayMode as 'grouped' | 'individual') || 'grouped',
+        memo: notes || null,
       },
     });
 
@@ -78,4 +86,3 @@ export async function deleteFacility(id: string) {
     return { success: false, error: '施設の削除に失敗しました' };
   }
 }
-

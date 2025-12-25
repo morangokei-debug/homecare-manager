@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Trash2, Home, Building2 } from 'lucide-react';
+import { Loader2, Save, Trash2, Home, Building2, Copy } from 'lucide-react';
 import { createEvent, updateEvent, deleteEvent } from '@/app/actions/events';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 
@@ -54,7 +54,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
   const [patients, setPatients] = useState<Patient[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [patientFilter, setPatientFilter] = useState<'all' | 'individual' | 'facility' | string>('all');
+  const [patientFilter, setPatientFilter] = useState<'all' | 'individual' | string>('all');
 
   const [formData, setFormData] = useState({
     type: 'visit' as 'visit' | 'prescription',
@@ -63,7 +63,10 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     patientId: '',
     assigneeId: '',
     notes: '',
+    status: 'draft' as 'draft' | 'confirmed',
     isCompleted: false,
+    isRecurring: false,
+    recurringInterval: '',
   });
 
   useEffect(() => {
@@ -89,7 +92,10 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
         patientId: event.patientId,
         assigneeId: event.assigneeId || '',
         notes: event.notes || '',
+        status: event.status || 'draft',
         isCompleted: event.isCompleted,
+        isRecurring: event.isRecurring || false,
+        recurringInterval: event.recurringInterval?.toString() || '',
       });
     } else if (selectedDate) {
       setFormData({
@@ -99,7 +105,10 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
         patientId: '',
         assigneeId: '',
         notes: '',
+        status: 'draft',
         isCompleted: false,
+        isRecurring: false,
+        recurringInterval: '',
       });
     }
   }, [event, selectedDate]);
@@ -111,7 +120,6 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     } else if (patientFilter === 'individual') {
       return patients.filter((p) => !p.facilityId);
     } else {
-      // 特定の施設でフィルタ
       return patients.filter((p) => p.facilityId === patientFilter);
     }
   }, [patients, patientFilter]);
@@ -127,7 +135,10 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     data.append('patientId', formData.patientId);
     data.append('assigneeId', formData.assigneeId);
     data.append('notes', formData.notes);
+    data.append('status', formData.status);
     data.append('isCompleted', String(formData.isCompleted));
+    data.append('isRecurring', String(formData.isRecurring));
+    data.append('recurringInterval', formData.recurringInterval);
 
     let result;
     if (event) {
@@ -159,9 +170,27 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     setDeleting(false);
   }
 
+  // 次回作成機能
+  function handleCreateNext() {
+    if (!event || !formData.recurringInterval) return;
+    
+    const interval = parseInt(formData.recurringInterval);
+    if (isNaN(interval) || interval <= 0) return;
+
+    const currentDate = new Date(event.date);
+    currentDate.setDate(currentDate.getDate() + interval);
+    
+    setFormData({
+      ...formData,
+      date: format(currentDate, 'yyyy-MM-dd'),
+      isCompleted: false,
+      status: 'draft',
+    });
+  }
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-lg">
+      <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{event ? 'イベント編集' : '新規イベント登録'}</DialogTitle>
         </DialogHeader>
@@ -186,6 +215,25 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
             </Select>
           </div>
 
+          {/* ステータス */}
+          <div className="space-y-2">
+            <Label className="text-slate-300">ステータス</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: 'draft' | 'confirmed') =>
+                setFormData({ ...formData, status: value })
+              }
+            >
+              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">📝 下書き</SelectItem>
+                <SelectItem value="confirmed">✅ 確定</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* 日付 */}
           <div className="space-y-2">
             <Label className="text-slate-300">日付 <span className="text-red-400">*</span></Label>
@@ -202,7 +250,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
           <div className="space-y-2">
             <Label className="text-slate-300">
               予定時刻
-              <span className="text-slate-500 text-xs ml-2">（任意：空欄でタスクとして登録）</span>
+              <span className="text-slate-500 text-xs ml-2">（任意）</span>
             </Label>
             <Input
               type="time"
@@ -317,6 +365,51 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
               </SelectContent>
             </Select>
           </div>
+
+          {/* 定期処方設定（処方の場合のみ） */}
+          {formData.type === 'prescription' && (
+            <div className="space-y-3 p-3 rounded-lg bg-slate-700/30 border border-slate-600">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isRecurring"
+                  checked={formData.isRecurring}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isRecurring: checked as boolean })
+                  }
+                />
+                <Label htmlFor="isRecurring" className="text-slate-300">
+                  定期処方
+                </Label>
+              </div>
+              {formData.isRecurring && (
+                <div className="space-y-2">
+                  <Label className="text-slate-300 text-sm">間隔（日数）</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={formData.recurringInterval}
+                    onChange={(e) =>
+                      setFormData({ ...formData, recurringInterval: e.target.value })
+                    }
+                    placeholder="例: 28"
+                    className="bg-slate-700/50 border-slate-600"
+                  />
+                  {event && formData.recurringInterval && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCreateNext}
+                      className="w-full border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      次回分を作成（+{formData.recurringInterval}日）
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 備考 */}
           <div className="space-y-2">

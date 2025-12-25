@@ -17,11 +17,13 @@ export async function createEvent(formData: FormData) {
     const patientId = formData.get('patientId') as string;
     const assigneeId = formData.get('assigneeId') as string;
     const notes = formData.get('notes') as string;
+    const status = formData.get('status') as string;
+    const isRecurring = formData.get('isRecurring') === 'true';
+    const recurringInterval = formData.get('recurringInterval') as string;
 
     // 時刻を適切な形式に変換（空の場合はnull）
     let timeValue = null;
     if (time) {
-      // PostgreSQLのTIME型に合わせてDateオブジェクトを作成
       timeValue = new Date(`1970-01-01T${time}:00.000Z`);
     }
 
@@ -33,12 +35,16 @@ export async function createEvent(formData: FormData) {
         patientId,
         assignedTo: assigneeId && assigneeId !== 'none' ? assigneeId : null,
         memo: notes || null,
+        status: (status as 'draft' | 'confirmed') || 'draft',
         createdBy: session.user.id,
         isCompleted: false,
+        isRecurring,
+        recurringInterval: recurringInterval ? parseInt(recurringInterval) : null,
       },
     });
 
     revalidatePath('/calendar');
+    revalidatePath('/events');
     return { success: true };
   } catch (error) {
     console.error('Failed to create event:', error);
@@ -55,7 +61,10 @@ export async function updateEvent(formData: FormData) {
     const patientId = formData.get('patientId') as string;
     const assigneeId = formData.get('assigneeId') as string;
     const notes = formData.get('notes') as string;
+    const status = formData.get('status') as string;
     const isCompleted = formData.get('isCompleted') === 'true';
+    const isRecurring = formData.get('isRecurring') === 'true';
+    const recurringInterval = formData.get('recurringInterval') as string;
 
     // 時刻を適切な形式に変換（空の場合はnull）
     let timeValue = null;
@@ -72,11 +81,15 @@ export async function updateEvent(formData: FormData) {
         patientId,
         assignedTo: assigneeId && assigneeId !== 'none' ? assigneeId : null,
         memo: notes || null,
+        status: (status as 'draft' | 'confirmed') || 'draft',
         isCompleted,
+        isRecurring,
+        recurringInterval: recurringInterval ? parseInt(recurringInterval) : null,
       },
     });
 
     revalidatePath('/calendar');
+    revalidatePath('/events');
     return { success: true };
   } catch (error) {
     console.error('Failed to update event:', error);
@@ -91,9 +104,27 @@ export async function deleteEvent(id: string) {
     });
 
     revalidatePath('/calendar');
+    revalidatePath('/events');
     return { success: true };
   } catch (error) {
     console.error('Failed to delete event:', error);
     return { success: false, error: 'イベントの削除に失敗しました' };
+  }
+}
+
+// 一括確定
+export async function confirmEvents(eventIds: string[]) {
+  try {
+    await prisma.event.updateMany({
+      where: { id: { in: eventIds } },
+      data: { status: 'confirmed' },
+    });
+
+    revalidatePath('/calendar');
+    revalidatePath('/events');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to confirm events:', error);
+    return { success: false, error: '確定に失敗しました' };
   }
 }

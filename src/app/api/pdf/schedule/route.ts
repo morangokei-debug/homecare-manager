@@ -1,24 +1,43 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { format } from 'date-fns';
 import { jsPDF } from 'jspdf';
+import { format, eachDayOfInterval, parseISO } from 'date-fns';
+import { ja } from 'date-fns/locale';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const start = searchParams.get('start');
   const end = searchParams.get('end');
+  const typeFilter = searchParams.get('type') || 'all';
+  const statusFilter = searchParams.get('status') || 'confirmed';
+  const includeCompleted = searchParams.get('includeCompleted') === 'true';
 
   if (!start || !end) {
-    return NextResponse.json({ error: 'start and end are required' }, { status: 400 });
+    return NextResponse.json({ error: 'Missing date range' }, { status: 400 });
+  }
+
+  // イベントを取得
+  const whereCondition: Record<string, unknown> = {
+    date: {
+      gte: new Date(start),
+      lte: new Date(end),
+    },
+  };
+
+  if (typeFilter !== 'all') {
+    whereCondition.type = typeFilter;
+  }
+
+  if (statusFilter !== 'all') {
+    whereCondition.status = statusFilter;
+  }
+
+  if (!includeCompleted) {
+    whereCondition.isCompleted = false;
   }
 
   const events = await prisma.event.findMany({
-    where: {
-      date: {
-        gte: new Date(start),
-        lte: new Date(end),
-      },
-    },
+    where: whereCondition,
     include: {
       patient: {
         include: { facility: true },
@@ -30,96 +49,141 @@ export async function GET(request: Request) {
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
-  // PDFを生成（横向き）
+  // PDF生成
   const doc = new jsPDF({
-    orientation: 'landscape',
+    orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
   });
 
+  // 日本語フォント用の設定（ASCII文字のみ使用）
+  doc.setFont('helvetica');
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 15;
+  let y = margin;
+
   // ヘッダー
   doc.setFontSize(16);
-  doc.text('Schedule Report', 14, 15);
-  doc.setFontSize(10);
-  doc.text(`Period: ${start} - ${end}`, 14, 22);
-  doc.text(`Generated: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`, 14, 28);
+  const startDate = parseISO(start);
+  const endDate = parseISO(end);
+  const isDaily = start === end;
+  
+  const title = isDaily
+    ? `Schedule: ${format(startDate, 'yyyy-MM-dd (EEE)', { locale: ja })}`
+    : `Schedule: ${format(startDate, 'yyyy-MM-dd')} - ${format(endDate, 'yyyy-MM-dd')}`;
+  
+  doc.text(title, margin, y);
+  y += 8;
 
-  // テーブルデータの準備
-  const tableData = events.map((event) => {
-    const displayName = event.patient.facility?.displayMode === 'grouped' && event.patient.facility
-      ? event.patient.facility.name
-      : event.patient.name;
-
-    return [
-      format(event.date, 'yyyy-MM-dd'),
-      event.type === 'visit' ? 'Visit' : 'Prescription',
-      displayName,
-      event.time ? event.time.toISOString().split('T')[1].slice(0, 5) : '-',
-      event.assignee?.name || '-',
-      event.isCompleted ? 'Done' : 'Pending',
-    ];
-  });
-
-  // シンプルなテーブル描画
-  const headers = ['Date', 'Type', 'Patient/Facility', 'Time', 'Assignee', 'Status'];
-  const colWidths = [30, 25, 80, 40, 50, 25];
-  let yPos = 38;
-  const xStart = 14;
-
-  // ヘッダー行
-  doc.setFillColor(59, 130, 246);
-  doc.rect(xStart, yPos, colWidths.reduce((a, b) => a + b, 0), 8, 'F');
-  doc.setTextColor(255, 255, 255);
   doc.setFontSize(9);
+  doc.setTextColor(128);
+  doc.text(`Output: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`, margin, y);
+  y += 10;
+  doc.setTextColor(0);
 
-  let xPos = xStart + 2;
-  headers.forEach((header, i) => {
-    doc.text(header, xPos, yPos + 5.5);
-    xPos += colWidths[i];
-  });
+  // 日付ごとにイベントをグループ化
+  const dates = eachDayOfInterval({ start: startDate, end: endDate });
+  
+  for (const date of dates) {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const dayEvents = events.filter(
+      (e) => format(e.date, 'yyyy-MM-dd') === dateStr
+    );
 
-  yPos += 8;
-  doc.setTextColor(0, 0, 0);
+    // 日付ヘッダー
+    doc.setFillColor(240, 240, 240);
+    doc.rect(margin, y - 4, pageWidth - margin * 2, 7, 'F');
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(format(date, 'M/d (EEE)', { locale: ja }), margin + 2, y);
+    y += 6;
 
-  // データ行
-  tableData.forEach((row, rowIndex) => {
-    if (yPos > 180) {
-      doc.addPage();
-      yPos = 20;
-    }
+    if (dayEvents.length === 0) {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(128);
+      doc.text('No events', margin + 4, y);
+      doc.setTextColor(0);
+      y += 6;
+    } else {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
 
-    // 背景色（偶数行はグレー）
-    if (rowIndex % 2 === 0) {
-      doc.setFillColor(248, 250, 252);
-      doc.rect(xStart, yPos, colWidths.reduce((a, b) => a + b, 0), 7, 'F');
-    }
+      for (const event of dayEvents) {
+        // ページ送り
+        if (y > 270) {
+          doc.addPage();
+          y = margin;
+        }
 
-    xPos = xStart + 2;
-    row.forEach((cell, i) => {
-      // セル幅に収まるようにテキストを切り詰め
-      const maxWidth = colWidths[i] - 4;
-      let text = cell;
-      while (doc.getTextWidth(text) > maxWidth && text.length > 3) {
-        text = text.slice(0, -4) + '...';
+        const timeStr = event.time
+          ? format(event.time, 'HH:mm')
+          : '--:--';
+
+        const typeIcon = event.type === 'visit' ? '[V]' : '[Rx]';
+        
+        // 施設か個人宅かを判定
+        let targetName: string;
+        if (event.patient.facility && event.patient.facility.displayMode === 'grouped') {
+          targetName = event.patient.facility.name;
+        } else {
+          targetName = event.patient.name;
+        }
+
+        const locationIcon = event.patient.facility ? '[F]' : '[H]';
+        
+        // ステータス表示
+        const statusMark = event.status === 'draft' ? ' *' : '';
+        const completedMark = event.isCompleted ? ' [Done]' : '';
+
+        // イベント行
+        const line = `${timeStr}  ${typeIcon} ${locationIcon} ${targetName}${statusMark}${completedMark}`;
+        doc.text(line, margin + 4, y);
+        y += 5;
+
+        // 担当者
+        if (event.assignee) {
+          doc.setTextColor(100);
+          doc.text(`  Assignee: ${event.assignee.name}`, margin + 4, y);
+          doc.setTextColor(0);
+          y += 4;
+        }
+
+        // 備考
+        if (event.memo) {
+          doc.setTextColor(100);
+          const memoLines = doc.splitTextToSize(`  Note: ${event.memo}`, pageWidth - margin * 2 - 10);
+          doc.text(memoLines, margin + 4, y);
+          y += memoLines.length * 4;
+          doc.setTextColor(0);
+        }
+
+        y += 2;
       }
-      doc.text(text, xPos, yPos + 5);
-      xPos += colWidths[i];
-    });
+    }
 
-    yPos += 7;
-  });
+    y += 4;
+  }
 
-  // テーブルの枠線
-  doc.setDrawColor(200, 200, 200);
-  doc.rect(xStart, 38, colWidths.reduce((a, b) => a + b, 0), yPos - 38);
+  // フッター（凡例）
+  if (y > 260) {
+    doc.addPage();
+    y = margin;
+  }
+  y += 5;
+  doc.setFontSize(8);
+  doc.setTextColor(100);
+  doc.text('Legend: [V]=Visit, [Rx]=Prescription, [H]=Home, [F]=Facility, *=Draft', margin, y);
+  doc.setTextColor(0);
 
-  // PDFをバイナリとして取得
-  const pdfOutput = doc.output('arraybuffer');
+  // PDFをバッファとして取得
+  const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
 
-  return new NextResponse(pdfOutput, {
+  return new NextResponse(pdfBuffer, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="schedule_${start}_${end}.pdf"`,
+      'Content-Disposition': `attachment; filename="schedule_${start}_to_${end}.pdf"`,
     },
   });
 }
