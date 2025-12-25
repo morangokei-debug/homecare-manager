@@ -35,6 +35,8 @@ export interface CalendarEvent {
   isCompleted: boolean;
   isRecurring: boolean;
   recurringInterval: number | null;
+  reportDone: boolean;
+  planDone: boolean;
 }
 
 interface User {

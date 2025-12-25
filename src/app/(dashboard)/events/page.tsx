@@ -261,7 +261,8 @@ export default function EventsPage() {
                   <TableHead className="text-slate-400">種別</TableHead>
                   <TableHead className="text-slate-400">患者/施設</TableHead>
                   <TableHead className="text-slate-400">担当者</TableHead>
-                  <TableHead className="text-slate-400">状態</TableHead>
+                  <TableHead className="text-slate-400">書類</TableHead>
+                    <TableHead className="text-slate-400">状態</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -316,6 +317,22 @@ export default function EventsPage() {
                     </TableCell>
                     <TableCell className="text-slate-300">
                       {event.assigneeName || '-'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <span
+                          className={event.reportDone ? 'text-green-400' : 'text-slate-600'}
+                          title={event.reportDone ? '報告書済' : '報告書未'}
+                        >
+                          📄
+                        </span>
+                        <span
+                          className={event.planDone ? 'text-green-400' : 'text-slate-600'}
+                          title={event.planDone ? '計画書済' : '計画書未'}
+                        >
+                          📋
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

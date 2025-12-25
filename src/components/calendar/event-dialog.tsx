@@ -67,6 +67,8 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     isCompleted: false,
     isRecurring: false,
     recurringInterval: '',
+    reportDone: false,
+    planDone: false,
   });
 
   useEffect(() => {
@@ -96,6 +98,8 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
         isCompleted: event.isCompleted,
         isRecurring: event.isRecurring || false,
         recurringInterval: event.recurringInterval?.toString() || '',
+        reportDone: event.reportDone || false,
+        planDone: event.planDone || false,
       });
     } else if (selectedDate) {
       setFormData({
@@ -109,6 +113,8 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
         isCompleted: false,
         isRecurring: false,
         recurringInterval: '',
+        reportDone: false,
+        planDone: false,
       });
     }
   }, [event, selectedDate]);
@@ -139,6 +145,8 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     data.append('isCompleted', String(formData.isCompleted));
     data.append('isRecurring', String(formData.isRecurring));
     data.append('recurringInterval', formData.recurringInterval);
+    data.append('reportDone', String(formData.reportDone));
+    data.append('planDone', String(formData.planDone));
 
     let result;
     if (event) {
@@ -185,6 +193,8 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
       date: format(currentDate, 'yyyy-MM-dd'),
       isCompleted: false,
       status: 'draft',
+      reportDone: false,
+      planDone: false,
     });
   }
 
@@ -423,19 +433,46 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
             />
           </div>
 
-          {/* 完了フラグ */}
+          {/* 完了・書類チェック */}
           {event && (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isCompleted"
-                checked={formData.isCompleted}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isCompleted: checked as boolean })
-                }
-              />
-              <Label htmlFor="isCompleted" className="text-slate-300">
-                完了済みにする
-              </Label>
+            <div className="space-y-3 p-3 rounded-lg bg-slate-700/30 border border-slate-600">
+              <p className="text-sm text-slate-400">ステータス・書類</p>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isCompleted"
+                  checked={formData.isCompleted}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isCompleted: checked as boolean })
+                  }
+                />
+                <Label htmlFor="isCompleted" className="text-slate-300">
+                  完了済み
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="reportDone"
+                  checked={formData.reportDone}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, reportDone: checked as boolean })
+                  }
+                />
+                <Label htmlFor="reportDone" className="text-slate-300">
+                  📄 報告書 記載済み
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="planDone"
+                  checked={formData.planDone}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, planDone: checked as boolean })
+                  }
+                />
+                <Label htmlFor="planDone" className="text-slate-300">
+                  📋 計画書 記載済み
+                </Label>
+              </div>
             </div>
           )}
 

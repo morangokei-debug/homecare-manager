@@ -116,6 +116,10 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
     ? event.displayMode === 'facility' && event.facilityName ? '🏢' : '🏠'
     : '💊';
 
+  // 書類チェックの状態
+  const docsComplete = event.reportDone && event.planDone;
+  const docsSomeComplete = event.reportDone || event.planDone;
+
   return (
     <div
       onClick={onClick}
@@ -161,6 +165,27 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
           担当: {event.assigneeName}
         </div>
       )}
+      {/* 書類ステータス */}
+      <div className="flex items-center gap-1 mt-1.5">
+        <span
+          className={cn(
+            'text-xs',
+            event.reportDone ? 'text-green-400' : 'text-slate-600'
+          )}
+          title={event.reportDone ? '報告書済' : '報告書未'}
+        >
+          📄{event.reportDone ? '✓' : ''}
+        </span>
+        <span
+          className={cn(
+            'text-xs',
+            event.planDone ? 'text-green-400' : 'text-slate-600'
+          )}
+          title={event.planDone ? '計画書済' : '計画書未'}
+        >
+          📋{event.planDone ? '✓' : ''}
+        </span>
+      </div>
     </div>
   );
 }

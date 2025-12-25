@@ -40,6 +40,8 @@ export async function GET(request: Request) {
     isCompleted: event.isCompleted,
     isRecurring: event.isRecurring,
     recurringInterval: event.recurringInterval,
+    reportDone: event.reportDone,
+    planDone: event.planDone,
   }));
 
   return NextResponse.json(formattedEvents);

@@ -119,6 +119,8 @@ model Event {
   isCompleted       Boolean     @default(false) @map("is_completed")
   isRecurring       Boolean     @default(false) @map("is_recurring")
   recurringInterval Int?        @map("recurring_interval")
+  reportDone        Boolean     @default(false) @map("report_done")
+  planDone          Boolean     @default(false) @map("plan_done")
   createdBy         String      @map("created_by")
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")

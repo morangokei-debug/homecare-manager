@@ -107,6 +107,10 @@ function EventBadge({ event, onClick }: { event: CalendarEvent; onClick: (e: Rea
     ? event.displayMode === 'facility' && event.facilityName ? '🏢' : '🏠'
     : '💊';
 
+  // 書類の状態を表すインジケータ
+  const docStatus = event.reportDone && event.planDone ? '✓' :
+                    (event.reportDone || event.planDone) ? '◐' : '';
+
   return (
     <Badge
       variant="outline"
@@ -122,6 +126,17 @@ function EventBadge({ event, onClick }: { event: CalendarEvent; onClick: (e: Rea
       <span className="mr-1">{icon}</span>
       {event.time && <span className="mr-1 opacity-70">{event.time}</span>}
       <span className="truncate">{displayName}</span>
+      {docStatus && (
+        <span
+          className={cn(
+            'ml-auto text-[10px]',
+            event.reportDone && event.planDone ? 'text-green-400' : 'text-yellow-400'
+          )}
+          title={`報告書:${event.reportDone ? '済' : '未'} 計画書:${event.planDone ? '済' : '未'}`}
+        >
+          {docStatus}
+        </span>
+      )}
     </Badge>
   );
 }

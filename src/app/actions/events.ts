@@ -20,6 +20,8 @@ export async function createEvent(formData: FormData) {
     const status = formData.get('status') as string;
     const isRecurring = formData.get('isRecurring') === 'true';
     const recurringInterval = formData.get('recurringInterval') as string;
+    const reportDone = formData.get('reportDone') === 'true';
+    const planDone = formData.get('planDone') === 'true';
 
     // 時刻を適切な形式に変換（空の場合はnull）
     let timeValue = null;
@@ -40,6 +42,8 @@ export async function createEvent(formData: FormData) {
         isCompleted: false,
         isRecurring,
         recurringInterval: recurringInterval ? parseInt(recurringInterval) : null,
+        reportDone,
+        planDone,
       },
     });
 
@@ -65,6 +69,8 @@ export async function updateEvent(formData: FormData) {
     const isCompleted = formData.get('isCompleted') === 'true';
     const isRecurring = formData.get('isRecurring') === 'true';
     const recurringInterval = formData.get('recurringInterval') as string;
+    const reportDone = formData.get('reportDone') === 'true';
+    const planDone = formData.get('planDone') === 'true';
 
     // 時刻を適切な形式に変換（空の場合はnull）
     let timeValue = null;
@@ -85,6 +91,8 @@ export async function updateEvent(formData: FormData) {
         isCompleted,
         isRecurring,
         recurringInterval: recurringInterval ? parseInt(recurringInterval) : null,
+        reportDone,
+        planDone,
       },
     });
 
