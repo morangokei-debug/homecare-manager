@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import {
   Dialog,
@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Trash2 } from 'lucide-react';
+import { Loader2, Save, Trash2, Home, Building2 } from 'lucide-react';
 import { createEvent, updateEvent, deleteEvent } from '@/app/actions/events';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 
@@ -35,9 +35,15 @@ interface Patient {
   id: string;
   name: string;
   facilityId: string | null;
+  facility: { id: string; name: string } | null;
 }
 
 interface User {
+  id: string;
+  name: string;
+}
+
+interface Facility {
   id: string;
   name: string;
 }
@@ -47,6 +53,8 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
   const [deleting, setDeleting] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [patientFilter, setPatientFilter] = useState<'all' | 'individual' | 'facility' | string>('all');
 
   const [formData, setFormData] = useState({
     type: 'visit' as 'visit' | 'prescription',
@@ -61,11 +69,13 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
   useEffect(() => {
     if (open) {
       Promise.all([
-        fetch('/api/patients').then((res) => res.json()),
+        fetch('/api/patients?includeFacility=true').then((res) => res.json()),
         fetch('/api/users').then((res) => res.json()),
-      ]).then(([patientsData, usersData]) => {
+        fetch('/api/facilities').then((res) => res.json()),
+      ]).then(([patientsData, usersData, facilitiesData]) => {
         setPatients(patientsData);
         setUsers(usersData);
+        setFacilities(facilitiesData);
       });
     }
   }, [open]);
@@ -93,6 +103,18 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
       });
     }
   }, [event, selectedDate]);
+
+  // フィルタリングされた患者リスト
+  const filteredPatients = useMemo(() => {
+    if (patientFilter === 'all') {
+      return patients;
+    } else if (patientFilter === 'individual') {
+      return patients.filter((p) => !p.facilityId);
+    } else {
+      // 特定の施設でフィルタ
+      return patients.filter((p) => p.facilityId === patientFilter);
+    }
+  }, [patients, patientFilter]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -190,9 +212,59 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
             />
           </div>
 
+          {/* 患者フィルタ */}
+          <div className="space-y-2">
+            <Label className="text-slate-300">患者を絞り込み</Label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={patientFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setPatientFilter('all')}
+                className={patientFilter === 'all' 
+                  ? 'bg-slate-600' 
+                  : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
+              >
+                すべて
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={patientFilter === 'individual' ? 'default' : 'outline'}
+                onClick={() => setPatientFilter('individual')}
+                className={patientFilter === 'individual' 
+                  ? 'bg-emerald-600' 
+                  : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
+              >
+                <Home className="h-3.5 w-3.5 mr-1" />
+                個人宅
+              </Button>
+              {facilities.map((facility) => (
+                <Button
+                  key={facility.id}
+                  type="button"
+                  size="sm"
+                  variant={patientFilter === facility.id ? 'default' : 'outline'}
+                  onClick={() => setPatientFilter(facility.id)}
+                  className={patientFilter === facility.id 
+                    ? 'bg-blue-600' 
+                    : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
+                >
+                  <Building2 className="h-3.5 w-3.5 mr-1" />
+                  {facility.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           {/* 患者 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">患者 <span className="text-red-400">*</span></Label>
+            <Label className="text-slate-300">
+              患者 <span className="text-red-400">*</span>
+              <span className="text-slate-500 text-xs ml-2">
+                ({filteredPatients.length}名)
+              </span>
+            </Label>
             <Select
               value={formData.patientId}
               onValueChange={(value) => setFormData({ ...formData, patientId: value })}
@@ -202,11 +274,28 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 <SelectValue placeholder="患者を選択" />
               </SelectTrigger>
               <SelectContent>
-                {patients.map((patient) => (
+                {filteredPatients.map((patient) => (
                   <SelectItem key={patient.id} value={patient.id}>
-                    {patient.name}
+                    <div className="flex items-center gap-2">
+                      {patient.facility ? (
+                        <Building2 className="h-3.5 w-3.5 text-blue-400" />
+                      ) : (
+                        <Home className="h-3.5 w-3.5 text-emerald-400" />
+                      )}
+                      <span>{patient.name}</span>
+                      {patient.facility && (
+                        <span className="text-xs text-slate-400">
+                          ({patient.facility.name})
+                        </span>
+                      )}
+                    </div>
                   </SelectItem>
                 ))}
+                {filteredPatients.length === 0 && (
+                  <div className="px-2 py-4 text-center text-slate-500 text-sm">
+                    該当する患者がいません
+                  </div>
+                )}
               </SelectContent>
             </Select>
           </div>
