@@ -9,7 +9,19 @@ export async function GET(
   
   const patient = await prisma.patient.findUnique({
     where: { id },
-    include: { facility: true },
+    include: { 
+      facility: true,
+      summary: {
+        include: {
+          recentChangesUpdater: {
+            select: { name: true },
+          },
+          updater: {
+            select: { name: true },
+          },
+        },
+      },
+    },
   });
 
   if (!patient) {

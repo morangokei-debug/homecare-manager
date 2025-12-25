@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,10 +12,39 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Save, Loader2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { updatePatient, deletePatient } from '@/app/actions/patients';
+import { PatientSummary } from '@/components/patient/patient-summary';
+import { ApproachType } from '@prisma/client';
 
 interface Facility {
   id: string;
   name: string;
+}
+
+interface PatientSummaryData {
+  id: string;
+  patientId: string;
+  cautionMedicationRefusal: boolean;
+  cautionUnderstandingDifficulty: boolean;
+  cautionFamilyPresenceRequired: boolean;
+  cautionTimeRestriction: boolean;
+  cautionTroubleRisk: boolean;
+  cautionOther: boolean;
+  cautionOtherText: string | null;
+  prohibitedActions: string | null;
+  approachType: ApproachType;
+  approachNote: string | null;
+  primaryContactName: string;
+  primaryContactRelation: string;
+  primaryContactPhone: string;
+  secondaryContactName: string | null;
+  secondaryContactRelation: string | null;
+  secondaryContactPhone: string | null;
+  recentChanges: string;
+  recentChangesUpdatedAt: string;
+  freeNote: string | null;
+  updatedAt: string;
+  recentChangesUpdater?: { name: string };
+  updater?: { name: string };
 }
 
 interface Patient {
@@ -26,15 +56,19 @@ interface Patient {
   area: string | null;
   memo: string | null;
   facilityId: string | null;
+  summary?: PatientSummaryData | null;
 }
 
 export default function EditPatientPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [patient, setPatient] = useState<Patient | null>(null);
+
+  const canEdit = session?.user?.role === 'admin' || session?.user?.role === 'staff';
 
   useEffect(() => {
     Promise.all([
@@ -95,26 +129,35 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-white">患者情報編集</h1>
+            <h1 className="text-2xl font-bold text-white">患者情報</h1>
             <p className="text-slate-400">{patient.name}</p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-        >
-          {deleting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <Trash2 className="h-4 w-4 mr-2" />
-              削除
-            </>
-          )}
-        </Button>
+        {canEdit && (
+          <Button
+            variant="outline"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+          >
+            {deleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4 mr-2" />
+                削除
+              </>
+            )}
+          </Button>
+        )}
       </div>
+
+      {/* 引き継ぎサマリー（必読）*/}
+      <PatientSummary
+        patientId={patient.id}
+        patientName={patient.name}
+        summary={patient.summary || null}
+      />
 
       {/* フォーム */}
       <form onSubmit={handleSubmit}>
@@ -219,30 +262,32 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
               />
             </div>
 
-            <div className="flex justify-end gap-4 pt-4">
-              <Link href="/patients">
-                <Button type="button" variant="outline" className="border-slate-600">
-                  キャンセル
+            {canEdit && (
+              <div className="flex justify-end gap-4 pt-4">
+                <Link href="/patients">
+                  <Button type="button" variant="outline" className="border-slate-600">
+                    キャンセル
+                  </Button>
+                </Link>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      保存中...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      保存する
+                    </>
+                  )}
                 </Button>
-              </Link>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    保存中...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    保存する
-                  </>
-                )}
-              </Button>
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </form>

@@ -54,6 +54,12 @@ model User {
   createdEvents    Event[]    @relation("EventCreatedBy")
   assignedEvents   Event[]    @relation("EventAssignedTo")
   reminders        Reminder[]
+  
+  // 患者サマリー関連
+  summariesAsRecentChangesUpdater PatientSummary[] @relation("SummaryRecentChangesUpdater")
+  summariesAsCreator              PatientSummary[] @relation("SummaryCreator")
+  summariesAsUpdater              PatientSummary[] @relation("SummaryUpdater")
+  summaryHistories                PatientSummaryHistory[]
 
   @@index([role])
   @@index([isActive])
@@ -99,6 +105,7 @@ model Patient {
   // Relations
   facility Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
   events   Event[]
+  summary  PatientSummary?
 
   @@index([name])
   @@index([nameKana])
@@ -174,4 +181,83 @@ model Reminder {
   @@index([scheduledAt])
   @@index([isRead])
   @@map("reminders")
+}
+
+// ============================================
+// 患者引き継ぎサマリー
+// ============================================
+
+enum ApproachType {
+  normal        // 通常対応で問題なし
+  careful       // 慎重な対応が必要
+  contact_first // 事前連絡をしてから対応
+}
+
+model PatientSummary {
+  id        String   @id @default(uuid())
+  patientId String   @unique @map("patient_id")
+
+  // ① 対応時の最重要注意点（チェックボックス）
+  cautionMedicationRefusal      Boolean @default(false) @map("caution_medication_refusal")
+  cautionUnderstandingDifficulty Boolean @default(false) @map("caution_understanding_difficulty")
+  cautionFamilyPresenceRequired Boolean @default(false) @map("caution_family_presence_required")
+  cautionTimeRestriction        Boolean @default(false) @map("caution_time_restriction")
+  cautionTroubleRisk            Boolean @default(false) @map("caution_trouble_risk")
+  cautionOther                  Boolean @default(false) @map("caution_other")
+  cautionOtherText              String? @map("caution_other_text") @db.VarChar(100)
+
+  // ② 絶対に守ること（やってはいけないこと）
+  prohibitedActions String? @map("prohibited_actions") @db.VarChar(300)
+
+  // ③ 対応の基本方針
+  approachType ApproachType @default(normal) @map("approach_type")
+  approachNote String?      @map("approach_note") @db.VarChar(100)
+
+  // ④ 困った時の連絡先
+  primaryContactName     String  @map("primary_contact_name") @db.VarChar(50)
+  primaryContactRelation String  @map("primary_contact_relation") @db.VarChar(30)
+  primaryContactPhone    String  @map("primary_contact_phone") @db.VarChar(20)
+  secondaryContactName     String? @map("secondary_contact_name") @db.VarChar(50)
+  secondaryContactRelation String? @map("secondary_contact_relation") @db.VarChar(30)
+  secondaryContactPhone    String? @map("secondary_contact_phone") @db.VarChar(20)
+
+  // ⑤ 最近の変化・直近トピック
+  recentChanges          String   @map("recent_changes") @db.VarChar(300)
+  recentChangesUpdatedAt DateTime @map("recent_changes_updated_at")
+  recentChangesUpdatedBy String   @map("recent_changes_updated_by")
+
+  // ⑥ 自由補足
+  freeNote String? @map("free_note") @db.VarChar(500)
+
+  // メタ情報
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String   @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String   @map("updated_by")
+
+  // Relations
+  patient                Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  recentChangesUpdater   User    @relation("SummaryRecentChangesUpdater", fields: [recentChangesUpdatedBy], references: [id])
+  creator                User    @relation("SummaryCreator", fields: [createdBy], references: [id])
+  updater                User    @relation("SummaryUpdater", fields: [updatedBy], references: [id])
+  history                PatientSummaryHistory[]
+
+  @@map("patient_summaries")
+}
+
+model PatientSummaryHistory {
+  id            String   @id @default(uuid())
+  summaryId     String   @map("summary_id")
+  snapshot      Json     // 変更時点の全データ
+  changedFields Json     @map("changed_fields") // 変更されたフィールド一覧
+  changedAt     DateTime @default(now()) @map("changed_at")
+  changedBy     String   @map("changed_by")
+
+  // Relations
+  summary PatientSummary @relation(fields: [summaryId], references: [id], onDelete: Cascade)
+  changer User           @relation(fields: [changedBy], references: [id])
+
+  @@index([summaryId])
+  @@index([changedAt])
+  @@map("patient_summary_histories")
 }
