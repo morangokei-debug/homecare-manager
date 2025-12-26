@@ -107,7 +107,7 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
               value={exportType}
               onValueChange={(v) => setExportType(v as 'daily' | 'weekly')}
             >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -126,7 +126,7 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-gray-50 border-gray-200"
+              className="bg-gray-50 border-gray-200 text-gray-800"
             />
             {exportType === 'weekly' && selectedDate && (
               <p className="text-xs text-gray-400">
@@ -144,7 +144,7 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
               value={typeFilter}
               onValueChange={(v) => setTypeFilter(v as typeof typeFilter)}
             >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -162,7 +162,7 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
               value={statusFilter}
               onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
             >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

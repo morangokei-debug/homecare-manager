@@ -221,7 +221,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 setFormData({ ...formData, type: value })
               }
             >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -240,7 +240,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 setFormData({ ...formData, status: value })
               }
             >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -258,7 +258,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               required
-              className="bg-gray-50 border-gray-200"
+              className="bg-gray-50 border-gray-200 text-gray-800"
             />
           </div>
 
@@ -272,7 +272,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
               type="time"
               value={formData.time}
               onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-              className="bg-gray-50 border-gray-200"
+              className="bg-gray-50 border-gray-200 text-gray-800"
             />
           </div>
 
@@ -283,7 +283,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
               value={patientFilter}
               onValueChange={(value) => setPatientFilter(value)}
             >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -383,7 +383,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
               value={formData.assigneeId}
               onValueChange={(value) => setFormData({ ...formData, assigneeId: value })}
             >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue placeholder="担当者を選択（任意）" />
               </SelectTrigger>
               <SelectContent>
@@ -423,7 +423,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                       setFormData({ ...formData, recurringInterval: e.target.value })
                     }
                     placeholder="例: 28"
-                    className="bg-gray-50 border-gray-200"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
                   />
                   {event && formData.recurringInterval && (
                     <Button

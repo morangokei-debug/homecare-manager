@@ -444,7 +444,7 @@ export function PatientDocuments({ patientId }: Props) {
                       setUploadForm((prev) => ({ ...prev, type: value }))
                     }
                   >
-                    <SelectTrigger className="bg-gray-50 border-gray-200">
+                    <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -469,7 +469,7 @@ export function PatientDocuments({ patientId }: Props) {
                       }))
                     }
                     placeholder="例: 2024年1月の検査結果"
-                    className="bg-gray-50 border-gray-200"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
                     maxLength={200}
                   />
                 </div>

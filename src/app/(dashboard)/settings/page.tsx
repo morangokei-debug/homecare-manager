@@ -224,7 +224,7 @@ export default function SettingsPage() {
                         setPasswordData({ ...passwordData, currentPassword: e.target.value })
                       }
                       required
-                      className="bg-gray-50 border-gray-200"
+                      className="bg-gray-50 border-gray-200 text-gray-800"
                     />
                   </div>
                   <div className="space-y-2">
@@ -237,7 +237,7 @@ export default function SettingsPage() {
                       }
                       required
                       minLength={8}
-                      className="bg-gray-50 border-gray-200"
+                      className="bg-gray-50 border-gray-200 text-gray-800"
                     />
                   </div>
                   <div className="space-y-2">
@@ -249,7 +249,7 @@ export default function SettingsPage() {
                         setPasswordData({ ...passwordData, confirmPassword: e.target.value })
                       }
                       required
-                      className="bg-gray-50 border-gray-200"
+                      className="bg-gray-50 border-gray-200 text-gray-800"
                     />
                   </div>
                   <Button
@@ -417,7 +417,7 @@ export default function SettingsPage() {
                                 onChange={(e) => setResetPassword(e.target.value)}
                                 minLength={8}
                                 placeholder="••••••••"
-                                className="bg-gray-50 border-gray-200"
+                                className="bg-gray-50 border-gray-200 text-gray-800"
                               />
                             </div>
                             <Button
