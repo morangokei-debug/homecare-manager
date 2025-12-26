@@ -14,13 +14,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Loader2, Save, User, Shield, Users, Key, RotateCcw } from 'lucide-react';
+import { Loader2, Save, User, Shield, Users, Key, RotateCcw, Calendar, Copy, RefreshCw, Link2, ExternalLink } from 'lucide-react';
 
 interface UserData {
   id: string;
   name: string;
   email: string;
   role: string;
+}
+
+interface IcsTokenData {
+  token: string | null;
+  isActive: boolean;
+  createdAt: string | null;
 }
 
 export default function SettingsPage() {
@@ -42,16 +48,72 @@ export default function SettingsPage() {
   const [resetPassword, setResetPassword] = useState('');
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  
+  // ICSトークン関連
+  const [icsToken, setIcsToken] = useState<IcsTokenData>({ token: null, isActive: false, createdAt: null });
+  const [icsLoading, setIcsLoading] = useState(false);
+  const [copied, setCopied] = useState<'visit' | 'rx' | null>(null);
 
   useEffect(() => {
     if (session?.user?.role === 'admin') {
       fetchUsers();
     }
+    fetchIcsToken();
   }, [session]);
 
   const fetchUsers = async () => {
     const data = await fetch('/api/users/all').then((r) => r.json());
     setUsers(data);
+  };
+
+  const fetchIcsToken = async () => {
+    try {
+      const data = await fetch('/api/ics-token').then((r) => r.json());
+      setIcsToken(data);
+    } catch {
+      // トークンがない場合
+    }
+  };
+
+  const generateIcsToken = async () => {
+    setIcsLoading(true);
+    try {
+      const data = await fetch('/api/ics-token', { method: 'POST' }).then((r) => r.json());
+      setIcsToken(data);
+    } catch {
+      alert('トークンの発行に失敗しました');
+    } finally {
+      setIcsLoading(false);
+    }
+  };
+
+  const revokeIcsToken = async () => {
+    if (!confirm('トークンを無効化すると、Googleカレンダーでの購読が停止します。よろしいですか？')) return;
+    
+    setIcsLoading(true);
+    try {
+      await fetch('/api/ics-token', { method: 'DELETE' });
+      setIcsToken({ token: null, isActive: false, createdAt: null });
+    } catch {
+      alert('トークンの無効化に失敗しました');
+    } finally {
+      setIcsLoading(false);
+    }
+  };
+
+  const getIcsUrl = (type: 'visit' | 'rx') => {
+    if (!icsToken.token) return '';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    return type === 'visit'
+      ? `${baseUrl}/api/calendar/visits.ics?token=${icsToken.token}`
+      : `${baseUrl}/api/calendar/prescriptions.ics?token=${icsToken.token}`;
+  };
+
+  const copyToClipboard = async (type: 'visit' | 'rx') => {
+    const url = getIcsUrl(type);
+    await navigator.clipboard.writeText(url);
+    setCopied(type);
+    setTimeout(() => setCopied(null), 2000);
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -266,6 +328,149 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Googleカレンダー連携 */}
+      <Card className="bg-white border-gray-200">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-blue-400" />
+            </div>
+            <div>
+              <CardTitle className="text-gray-800">Googleカレンダー連携</CardTitle>
+              <CardDescription>ICS購読URLでGoogleカレンダーに予定を表示</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!icsToken.token || !icsToken.isActive ? (
+            <div className="text-center py-6">
+              <p className="text-gray-500 mb-4">
+                トークンを発行すると、Googleカレンダーで訪問予定を閲覧できます
+              </p>
+              <Button
+                onClick={generateIcsToken}
+                disabled={icsLoading}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                {icsLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Link2 className="h-4 w-4 mr-2" />
+                )}
+                トークンを発行
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* 訪問予定URL */}
+              <div className="space-y-2">
+                <Label className="text-gray-600 flex items-center gap-2">
+                  🏠 訪問予定
+                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                    推奨
+                  </Badge>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={getIcsUrl('visit')}
+                    readOnly
+                    className="bg-gray-50 border-gray-200 text-gray-600 text-sm font-mono"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard('visit')}
+                    className="shrink-0 border-gray-200"
+                  >
+                    {copied === 'visit' ? (
+                      <span className="text-emerald-500 text-xs">✓</span>
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* 処方予定URL */}
+              <div className="space-y-2">
+                <Label className="text-gray-600">💊 処方予定</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={getIcsUrl('rx')}
+                    readOnly
+                    className="bg-gray-50 border-gray-200 text-gray-600 text-sm font-mono"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard('rx')}
+                    className="shrink-0 border-gray-200"
+                  >
+                    {copied === 'rx' ? (
+                      <span className="text-emerald-500 text-xs">✓</span>
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* 使い方 */}
+              <div className="rounded-lg bg-blue-50 p-4 text-sm">
+                <p className="font-medium text-blue-800 mb-2">📱 Googleカレンダーへの追加手順</p>
+                <ol className="list-decimal list-inside text-blue-700 space-y-1">
+                  <li>上のURLをコピー</li>
+                  <li>
+                    <a
+                      href="https://calendar.google.com/calendar/r/settings/addbyurl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline inline-flex items-center gap-1"
+                    >
+                      Googleカレンダー設定
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                    を開く
+                  </li>
+                  <li>「URLで追加」にURLを貼り付けて「カレンダーを追加」</li>
+                </ol>
+                <p className="mt-2 text-blue-600 text-xs">
+                  ※ 反映には数分〜数時間かかる場合があります
+                </p>
+              </div>
+
+              {/* トークン管理 */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <div className="text-sm text-gray-500">
+                  発行日: {icsToken.createdAt ? new Date(icsToken.createdAt).toLocaleDateString('ja-JP') : '-'}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={generateIcsToken}
+                    disabled={icsLoading}
+                    className="border-gray-200 text-gray-600"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                    再発行
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={revokeIcsToken}
+                    disabled={icsLoading}
+                    className="border-red-200 text-red-500 hover:bg-red-50"
+                  >
+                    無効化
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* 管理者専用：ユーザー管理 */}
       {session?.user?.role === 'admin' && (
         <>
@@ -335,7 +540,7 @@ export default function SettingsPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
+                  className="bg-purple-500 hover:bg-purple-600"
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -423,7 +628,7 @@ export default function SettingsPage() {
                             <Button
                               onClick={() => handlePasswordReset(user.id)}
                               disabled={loading || resetPassword.length < 8}
-                              className="w-full bg-gradient-to-r from-orange-500 to-red-500"
+                              className="w-full bg-orange-500 hover:bg-orange-600"
                             >
                               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'リセットする'}
                             </Button>

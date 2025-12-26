@@ -63,10 +63,32 @@ model User {
   
   // 患者ドキュメント関連
   uploadedDocuments PatientDocument[]
+  
+  // ICSカレンダートークン
+  icsToken IcsToken?
 
   @@index([role])
   @@index([isActive])
   @@map("users")
+}
+
+// ============================================
+// ICSカレンダー購読トークン
+// ============================================
+
+model IcsToken {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  token     String   @unique @db.VarChar(64)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("ics_tokens")
 }
 
 model Facility {
