@@ -28,11 +28,9 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
-  Check,
   Loader2,
 } from 'lucide-react';
 import { EventDialog } from '@/components/calendar/event-dialog';
-import { confirmEvents } from '@/app/actions/events';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 
 export default function EventsPage() {
@@ -41,12 +39,8 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'visit' | 'prescription'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'confirmed'>('all');
-  const [completedFilter, setCompletedFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [confirming, setConfirming] = useState(false);
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -70,65 +64,35 @@ export default function EventsPage() {
         const matchesSearch =
           event.patientName.toLowerCase().includes(query) ||
           event.facilityName?.toLowerCase().includes(query) ||
-          event.assigneeName?.toLowerCase().includes(query) ||
-          event.notes?.toLowerCase().includes(query);
+          event.assigneeName?.toLowerCase().includes(query);
         if (!matchesSearch) return false;
       }
 
       // 種別フィルタ
       if (typeFilter !== 'all' && event.type !== typeFilter) return false;
 
-      // ステータスフィルタ
-      if (statusFilter !== 'all' && event.status !== statusFilter) return false;
-
-      // 完了フィルタ
-      if (completedFilter === 'pending' && event.isCompleted) return false;
-      if (completedFilter === 'completed' && !event.isCompleted) return false;
-
       return true;
     });
-  }, [events, searchQuery, typeFilter, statusFilter, completedFilter]);
+  }, [events, searchQuery, typeFilter]);
 
-  const handleConfirmSelected = async () => {
-    if (selectedIds.length === 0) return;
-    setConfirming(true);
-    const result = await confirmEvents(selectedIds);
-    if (result.success) {
-      setSelectedIds([]);
-      fetchEvents();
-    } else {
-      alert(result.error);
-    }
-    setConfirming(false);
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
-  };
-
-  const selectAllDrafts = () => {
-    const draftIds = filteredEvents
-      .filter((e) => e.status === 'draft')
-      .map((e) => e.id);
-    setSelectedIds(draftIds);
-  };
+  // 訪問と処方を分けて表示
+  const visitEvents = filteredEvents.filter(e => e.type === 'visit');
+  const prescriptionEvents = filteredEvents.filter(e => e.type === 'prescription');
 
   return (
     <div className="space-y-6">
       {/* ページヘッダー */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">イベント一覧</h1>
-          <p className="text-gray-500">訪問・処方スケジュールをリスト表示</p>
+          <h1 className="text-2xl font-bold text-gray-800">スケジュール一覧</h1>
+          <p className="text-gray-500">訪問・処方の予定をリスト表示</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="icon"
             onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
-            className="border-gray-200 text-gray-600 hover:bg-gray-100"
+            className="border-gray-300 text-gray-600 hover:bg-gray-100"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -139,7 +103,7 @@ export default function EventsPage() {
             variant="outline"
             size="icon"
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="border-gray-200 text-gray-600 hover:bg-gray-100"
+            className="border-gray-300 text-gray-600 hover:bg-gray-100"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -147,14 +111,14 @@ export default function EventsPage() {
       </div>
 
       {/* フィルタ */}
-      <Card className="bg-white border-gray-200">
+      <Card className="bg-white border-gray-200 shadow-sm">
         <CardContent className="pt-6">
-          <div className="grid gap-4 md:grid-cols-5">
+          <div className="flex gap-4">
             {/* 検索 */}
-            <div className="md:col-span-2 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="患者名、施設名、担当者で検索..."
+                placeholder="患者名、施設名で検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-gray-50 border-gray-200 text-gray-800"
@@ -162,198 +126,145 @@ export default function EventsPage() {
             </div>
             {/* 種別 */}
             <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as typeof typeFilter)}>
-              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
+              <SelectTrigger className="w-[160px] bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue placeholder="種別" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">すべての種別</SelectItem>
-                <SelectItem value="visit">🏠 訪問</SelectItem>
-                <SelectItem value="prescription">💊 処方</SelectItem>
-              </SelectContent>
-            </Select>
-            {/* ステータス */}
-            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
-              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
-                <SelectValue placeholder="ステータス" />
-              </SelectTrigger>
-              <SelectContent>
                 <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="draft">📝 下書き</SelectItem>
-                <SelectItem value="confirmed">✅ 確定</SelectItem>
-              </SelectContent>
-            </Select>
-            {/* 完了状態 */}
-            <Select value={completedFilter} onValueChange={(v) => setCompletedFilter(v as typeof completedFilter)}>
-              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
-                <SelectValue placeholder="完了状態" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="pending">未完了</SelectItem>
-                <SelectItem value="completed">完了済み</SelectItem>
+                <SelectItem value="visit">🏠 訪問のみ</SelectItem>
+                <SelectItem value="prescription">💊 処方のみ</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* 一括操作 */}
-      {selectedIds.length > 0 && (
-        <div className="flex items-center gap-4 p-3 rounded-lg bg-purple-500/20 border border-purple-500/30">
-          <span className="text-purple-300">{selectedIds.length}件選択中</span>
-          <Button
-            size="sm"
-            onClick={handleConfirmSelected}
-            disabled={confirming}
-            className="bg-purple-600 hover:bg-purple-700"
-          >
-            {confirming ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Check className="h-4 w-4 mr-1" />
-                一括確定
-              </>
-            )}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setSelectedIds([])}
-            className="text-gray-500"
-          >
-            選択解除
-          </Button>
+      {loading ? (
+        <div className="flex items-center justify-center h-32">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* 訪問予定 */}
+          {(typeFilter === 'all' || typeFilter === 'visit') && (
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-gray-800 flex items-center gap-2">
+                  🏠 訪問予定
+                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                    {visitEvents.length}件
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {visitEvents.length === 0 ? (
+                  <p className="text-center py-8 text-gray-400">訪問予定はありません</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-100">
+                        <TableHead className="text-gray-500">日付</TableHead>
+                        <TableHead className="text-gray-500">患者名</TableHead>
+                        <TableHead className="text-gray-500">担当</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {visitEvents.map((event) => (
+                        <TableRow
+                          key={event.id}
+                          className="border-gray-100 cursor-pointer hover:bg-gray-50"
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setDialogOpen(true);
+                          }}
+                        >
+                          <TableCell className="text-gray-700 font-medium">
+                            {format(new Date(event.date), 'M/d (E)', { locale: ja })}
+                            {event.time && (
+                              <span className="text-gray-400 ml-2 text-sm">{event.time}</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {event.facilityName ? (
+                                <Building2 className="h-4 w-4 text-blue-400" />
+                              ) : (
+                                <Home className="h-4 w-4 text-emerald-400" />
+                              )}
+                              <span className="text-gray-800">{event.patientName}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-gray-500 text-sm">
+                            {event.assigneeName || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 処方予定 */}
+          {(typeFilter === 'all' || typeFilter === 'prescription') && (
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-gray-800 flex items-center gap-2">
+                  💊 処方予定（受診・発行予定日）
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                    {prescriptionEvents.length}件
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {prescriptionEvents.length === 0 ? (
+                  <p className="text-center py-8 text-gray-400">処方予定はありません</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-100">
+                        <TableHead className="text-gray-500">予定日</TableHead>
+                        <TableHead className="text-gray-500">患者名</TableHead>
+                        <TableHead className="text-gray-500">担当</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {prescriptionEvents.map((event) => (
+                        <TableRow
+                          key={event.id}
+                          className="border-gray-100 cursor-pointer hover:bg-gray-50"
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setDialogOpen(true);
+                          }}
+                        >
+                          <TableCell className="text-gray-700 font-medium">
+                            {format(new Date(event.date), 'M/d (E)', { locale: ja })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {event.facilityName ? (
+                                <Building2 className="h-4 w-4 text-blue-400" />
+                              ) : (
+                                <Home className="h-4 w-4 text-orange-400" />
+                              )}
+                              <span className="text-gray-800">{event.patientName}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-gray-500 text-sm">
+                            {event.assigneeName || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
-
-      {/* イベント一覧 */}
-      <Card className="bg-white border-gray-200">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-gray-800">
-            {filteredEvents.length}件のイベント
-          </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={selectAllDrafts}
-            className="border-gray-200 text-gray-600"
-          >
-            下書きを全選択
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-            </div>
-          ) : filteredEvents.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              イベントがありません
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="border-gray-200">
-                  <TableHead className="w-12"></TableHead>
-                  <TableHead className="text-gray-500">日付</TableHead>
-                  <TableHead className="text-gray-500">時刻</TableHead>
-                  <TableHead className="text-gray-500">種別</TableHead>
-                  <TableHead className="text-gray-500">患者/施設</TableHead>
-                  <TableHead className="text-gray-500">担当者</TableHead>
-                  <TableHead className="text-gray-500">報告</TableHead>
-                    <TableHead className="text-gray-500">状態</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEvents.map((event) => (
-                  <TableRow
-                    key={event.id}
-                    className="border-gray-200 cursor-pointer hover:bg-gray-50"
-                    onClick={() => {
-                      setSelectedEvent(event);
-                      setDialogOpen(true);
-                    }}
-                  >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(event.id)}
-                        onChange={() => toggleSelect(event.id)}
-                        className="rounded border-gray-200"
-                      />
-                    </TableCell>
-                    <TableCell className="text-gray-800">
-                      {format(new Date(event.date), 'M/d (E)', { locale: ja })}
-                    </TableCell>
-                    <TableCell className="text-gray-600">
-                      {event.time || '--:--'}
-                    </TableCell>
-                    <TableCell>
-                      {event.type === 'visit' ? (
-                        <span className="text-emerald-400">🏠 訪問</span>
-                      ) : (
-                        <span className="text-purple-400">💊 処方</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {event.facilityName && event.displayMode === 'grouped' ? (
-                          <>
-                            <Building2 className="h-4 w-4 text-blue-400" />
-                            <span className="text-gray-800">{event.facilityName}</span>
-                          </>
-                        ) : (
-                          <>
-                            {event.facilityName ? (
-                              <Building2 className="h-4 w-4 text-blue-400" />
-                            ) : (
-                              <Home className="h-4 w-4 text-emerald-400" />
-                            )}
-                            <span className="text-gray-800">{event.patientName}</span>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-600">
-                      {event.assigneeName || '-'}
-                    </TableCell>
-                    <TableCell>
-                      {event.reportDone ? (
-                        <span className="text-green-400" title="報告書済">✓</span>
-                      ) : (
-                        <span className="text-slate-600" title="報告書未">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={
-                            event.status === 'confirmed'
-                              ? 'border-green-500/50 text-green-400'
-                              : 'border-yellow-500/50 text-yellow-400'
-                          }
-                        >
-                          {event.status === 'confirmed' ? '確定' : '下書き'}
-                        </Badge>
-                        {event.isCompleted && (
-                          <Badge
-                            variant="outline"
-                            className="border-slate-500/50 text-gray-500"
-                          >
-                            完了
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
 
       {/* イベント編集ダイアログ */}
       <EventDialog
@@ -369,4 +280,3 @@ export default function EventsPage() {
     </div>
   );
 }
-
