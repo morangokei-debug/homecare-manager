@@ -45,10 +45,14 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
     // grouped施設のイベントをまとめる
     const groupedFacilities: Map<string, GroupedFacilityEvents> = new Map();
     const individualEvents: CalendarEvent[] = [];
+    const facilityEvents: CalendarEvent[] = []; // 施設全体イベント
 
     dayEvents.forEach((event) => {
-      if (event.facilityName && event.displayMode === 'grouped') {
-        // grouped施設のイベント
+      // 施設全体のイベント（isFacilityEvent）
+      if (event.isFacilityEvent) {
+        facilityEvents.push(event);
+      } else if (event.facilityName && event.displayMode === 'grouped') {
+        // grouped施設の患者イベント
         const key = event.facilityName;
         if (!groupedFacilities.has(key)) {
           groupedFacilities.set(key, {
@@ -67,6 +71,7 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
     return {
       groupedFacilities: Array.from(groupedFacilities.values()),
       individualEvents,
+      facilityEvents,
     };
   };
 
@@ -97,7 +102,7 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
         {/* カレンダーグリッド */}
         <div className="grid grid-cols-7 gap-1">
           {days.map((day) => {
-            const { groupedFacilities, individualEvents } = getEventsForDay(day);
+            const { groupedFacilities, individualEvents, facilityEvents } = getEventsForDay(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
             const dayIsToday = isToday(day);
             const dayOfWeek = day.getDay();
@@ -106,8 +111,23 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
             const displayItems: React.ReactNode[] = [];
             let remainingCount = 0;
 
-            // まず施設グループを追加
-            groupedFacilities.slice(0, 2).forEach((group) => {
+            // まず施設全体イベントを追加
+            facilityEvents.slice(0, 1).forEach((event) => {
+              displayItems.push(
+                <EventBadge
+                  key={event.id}
+                  event={event}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEventClick(event);
+                  }}
+                />
+              );
+            });
+
+            // 次に施設グループを追加
+            const facilitySlots = Math.max(0, 2 - displayItems.length);
+            groupedFacilities.slice(0, facilitySlots).forEach((group) => {
               displayItems.push(
                 <FacilityGroupBadge
                   key={`facility-${group.facilityId}`}
@@ -134,7 +154,8 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
 
             // 残り件数を計算
             remainingCount =
-              groupedFacilities.length - Math.min(groupedFacilities.length, 2) +
+              facilityEvents.length - Math.min(facilityEvents.length, 1) +
+              groupedFacilities.length - Math.min(groupedFacilities.length, facilitySlots) +
               individualEvents.length - Math.min(individualEvents.length, remainingSlots);
 
             return (
@@ -258,8 +279,10 @@ function FacilityGroupBadge({ group, onClick }: { group: GroupedFacilityEvents; 
 function EventBadge({ event, onClick }: { event: CalendarEvent; onClick: (e: React.MouseEvent) => void }) {
   const displayName = event.patientName;
 
+  // 施設全体イベントは青、個人訪問は緑、施設内患者は緑、処方は紫
+  const isFacilityWholeEvent = event.isFacilityEvent;
   const icon = event.type === 'visit'
-    ? event.facilityName ? '🏢' : '🏠'
+    ? isFacilityWholeEvent ? '🏢' : event.facilityName ? '🏢' : '🏠'
     : '💊';
 
   return (
@@ -268,16 +291,18 @@ function EventBadge({ event, onClick }: { event: CalendarEvent; onClick: (e: Rea
       onClick={onClick}
       className={cn(
         'w-full justify-start text-xs truncate font-normal border-0 cursor-pointer hover:opacity-80',
-        event.type === 'visit'
-          ? 'bg-emerald-500/20 text-emerald-300'
-          : 'bg-purple-500/20 text-purple-300'
+        isFacilityWholeEvent
+          ? 'bg-blue-500/20 text-blue-600'
+          : event.type === 'visit'
+            ? 'bg-emerald-500/20 text-emerald-600'
+            : 'bg-purple-500/20 text-purple-600'
       )}
     >
       <span className="mr-1">{icon}</span>
       {event.time && <span className="mr-1 opacity-70">{event.time}</span>}
       <span className="truncate">{displayName}</span>
       {event.reportDone && (
-        <span className="ml-auto text-green-400 text-[10px]" title="報告書済">✓</span>
+        <span className="ml-auto text-green-500 text-[10px]" title="報告書済">✓</span>
       )}
     </Badge>
   );

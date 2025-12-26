@@ -85,6 +85,7 @@ model Facility {
 
   // Relations
   patients Patient[]
+  events   Event[]
 
   @@index([name])
   @@index([nameKana])
@@ -123,7 +124,8 @@ model Event {
   type              EventType
   date              DateTime    @db.Date
   time              DateTime?   @db.Time
-  patientId         String      @map("patient_id")
+  patientId         String?     @map("patient_id")
+  facilityId        String?     @map("facility_id")  // 施設全体の訪問用
   assignedTo        String?     @map("assigned_to")
   memo              String?
   status            EventStatus @default(draft)
@@ -137,13 +139,15 @@ model Event {
   updatedAt         DateTime    @updatedAt @map("updated_at")
 
   // Relations
-  patient    Patient    @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  patient    Patient?   @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  facility   Facility?  @relation(fields: [facilityId], references: [id], onDelete: Restrict)
   assignee   User?      @relation("EventAssignedTo", fields: [assignedTo], references: [id], onDelete: SetNull)
   creator    User       @relation("EventCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
   reminders  Reminder[]
 
   @@index([date])
   @@index([patientId])
+  @@index([facilityId])
   @@index([assignedTo])
   @@index([createdBy])
   @@index([status])

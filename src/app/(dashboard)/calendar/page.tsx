@@ -26,10 +26,12 @@ export interface CalendarEvent {
   type: 'visit' | 'prescription';
   date: string;
   time: string | null;
-  patientId: string;
+  patientId: string | null;
   patientName: string;
+  facilityId: string | null;
   facilityName: string | null;
   displayMode: string;
+  isFacilityEvent: boolean;
   assigneeId: string | null;
   assigneeName: string | null;
   notes: string | null;

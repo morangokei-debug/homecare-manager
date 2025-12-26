@@ -15,13 +15,18 @@ export async function createEvent(formData: FormData) {
     const date = formData.get('date') as string;
     const time = formData.get('time') as string;
     const patientId = formData.get('patientId') as string;
+    const facilityId = formData.get('facilityId') as string;
     const assigneeId = formData.get('assigneeId') as string;
     const notes = formData.get('notes') as string;
-    const status = formData.get('status') as string;
     const isRecurring = formData.get('isRecurring') === 'true';
     const recurringInterval = formData.get('recurringInterval') as string;
     const reportDone = formData.get('reportDone') === 'true';
     const planDone = formData.get('planDone') === 'true';
+
+    // 患者か施設のどちらかが必須
+    if (!patientId && !facilityId) {
+      return { success: false, error: '患者または施設を選択してください' };
+    }
 
     // 時刻を適切な形式に変換（空の場合はnull）
     let timeValue = null;
@@ -34,10 +39,11 @@ export async function createEvent(formData: FormData) {
         type: type as 'visit' | 'prescription',
         date: new Date(date),
         time: timeValue,
-        patientId,
+        patientId: patientId || null,
+        facilityId: facilityId || null,
         assignedTo: assigneeId && assigneeId !== 'none' ? assigneeId : null,
         memo: notes || null,
-        status: (status as 'draft' | 'confirmed') || 'draft',
+        status: 'confirmed',
         createdBy: session.user.id,
         isCompleted: false,
         isRecurring,
@@ -63,14 +69,19 @@ export async function updateEvent(formData: FormData) {
     const date = formData.get('date') as string;
     const time = formData.get('time') as string;
     const patientId = formData.get('patientId') as string;
+    const facilityId = formData.get('facilityId') as string;
     const assigneeId = formData.get('assigneeId') as string;
     const notes = formData.get('notes') as string;
-    const status = formData.get('status') as string;
     const isCompleted = formData.get('isCompleted') === 'true';
     const isRecurring = formData.get('isRecurring') === 'true';
     const recurringInterval = formData.get('recurringInterval') as string;
     const reportDone = formData.get('reportDone') === 'true';
     const planDone = formData.get('planDone') === 'true';
+
+    // 患者か施設のどちらかが必須
+    if (!patientId && !facilityId) {
+      return { success: false, error: '患者または施設を選択してください' };
+    }
 
     // 時刻を適切な形式に変換（空の場合はnull）
     let timeValue = null;
@@ -84,10 +95,11 @@ export async function updateEvent(formData: FormData) {
         type: type as 'visit' | 'prescription',
         date: new Date(date),
         time: timeValue,
-        patientId,
+        patientId: patientId || null,
+        facilityId: facilityId || null,
         assignedTo: assigneeId && assigneeId !== 'none' ? assigneeId : null,
         memo: notes || null,
-        status: (status as 'draft' | 'confirmed') || 'draft',
+        status: 'confirmed',
         isCompleted,
         isRecurring,
         recurringInterval: recurringInterval ? parseInt(recurringInterval) : null,

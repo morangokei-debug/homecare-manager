@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsPDF } from 'jspdf';
-import { format, eachDayOfInterval, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
 export async function GET(request: Request) {
@@ -27,6 +27,7 @@ export async function GET(request: Request) {
       patient: {
         include: { facility: true },
       },
+      facility: true,
       assignee: {
         select: { name: true },
       },
@@ -50,7 +51,6 @@ export async function GET(request: Request) {
   const startDate = parseISO(start);
   const endDate = parseISO(end);
   const typeLabel = type === 'visit' ? 'Visit Schedule' : 'Prescription Schedule';
-  const typeLabelJa = type === 'visit' ? '訪問予定一覧' : '処方予定一覧';
 
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -109,8 +109,15 @@ export async function GET(request: Request) {
 
     const dateStr = format(event.date, 'M/d (E)', { locale: ja });
     const timeStr = event.time ? format(event.time, 'HH:mm') : '--:--';
-    const patientName = event.patient.name;
-    const location = event.patient.facility?.name || 'Home';
+    
+    // 施設全体イベントか患者イベントか判定
+    const isFacilityEvent = event.facilityId && !event.patientId;
+    const patientName = isFacilityEvent 
+      ? (event.facility?.name || 'Facility') 
+      : (event.patient?.name || '');
+    const location = isFacilityEvent
+      ? 'Facility'
+      : event.patient?.facility?.name || 'Home';
     const staff = event.assignee?.name || '-';
 
     doc.setFontSize(9);
@@ -153,4 +160,3 @@ export async function GET(request: Request) {
     },
   });
 }
-

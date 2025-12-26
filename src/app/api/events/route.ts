@@ -17,6 +17,7 @@ export async function GET(request: Request) {
       patient: {
         include: { facility: true },
       },
+      facility: true,
       assignee: {
         select: { id: true, name: true },
       },
@@ -24,25 +25,38 @@ export async function GET(request: Request) {
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
-  const formattedEvents = events.map((event) => ({
-    id: event.id,
-    type: event.type,
-    date: event.date.toISOString().split('T')[0],
-    time: event.time ? event.time.toISOString().split('T')[1].slice(0, 5) : null,
-    patientId: event.patientId,
-    patientName: event.patient.name,
-    facilityName: event.patient.facility?.name || null,
-    displayMode: event.patient.facility?.displayMode || 'individual',
-    assigneeId: event.assignedTo,
-    assigneeName: event.assignee?.name || null,
-    notes: event.memo,
-    status: event.status,
-    isCompleted: event.isCompleted,
-    isRecurring: event.isRecurring,
-    recurringInterval: event.recurringInterval,
-    reportDone: event.reportDone,
-    planDone: event.planDone,
-  }));
+  const formattedEvents = events.map((event) => {
+    // 施設全体の訪問の場合
+    const isFacilityEvent = event.facilityId && !event.patientId;
+    
+    return {
+      id: event.id,
+      type: event.type,
+      date: event.date.toISOString().split('T')[0],
+      time: event.time ? event.time.toISOString().split('T')[1].slice(0, 5) : null,
+      patientId: event.patientId,
+      patientName: isFacilityEvent 
+        ? event.facility?.name || '施設'
+        : event.patient?.name || '',
+      facilityId: event.facilityId,
+      facilityName: isFacilityEvent
+        ? event.facility?.name || null
+        : event.patient?.facility?.name || null,
+      displayMode: isFacilityEvent
+        ? 'grouped'
+        : event.patient?.facility?.displayMode || 'individual',
+      isFacilityEvent,
+      assigneeId: event.assignedTo,
+      assigneeName: event.assignee?.name || null,
+      notes: event.memo,
+      status: event.status,
+      isCompleted: event.isCompleted,
+      isRecurring: event.isRecurring,
+      recurringInterval: event.recurringInterval,
+      reportDone: event.reportDone,
+      planDone: event.planDone,
+    };
+  });
 
   return NextResponse.json(formattedEvents);
 }
