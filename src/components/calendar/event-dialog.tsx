@@ -512,7 +512,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="border-gray-200"
+                className="border-gray-300 text-gray-600 hover:bg-gray-100"
               >
                 {canEdit ? 'キャンセル' : '閉じる'}
               </Button>
@@ -520,7 +520,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white"
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
