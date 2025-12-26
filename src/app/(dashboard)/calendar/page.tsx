@@ -18,8 +18,9 @@ import { CalendarMonthView } from '@/components/calendar/calendar-month-view';
 import { CalendarWeekView } from '@/components/calendar/calendar-week-view';
 import { CalendarDayView } from '@/components/calendar/calendar-day-view';
 import { EventDialog } from '@/components/calendar/event-dialog';
-import { PdfExportButton } from '@/components/calendar/pdf-export-button';
+import { CalendarPdfExport } from '@/components/calendar/calendar-pdf-export';
 import { cn } from '@/lib/utils';
+import { FileDown } from 'lucide-react';
 
 export interface CalendarEvent {
   id: string;
@@ -61,6 +62,7 @@ export default function CalendarPage() {
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [pdfExportOpen, setPdfExportOpen] = useState(false);
 
   // ユーザー一覧取得
   useEffect(() => {
@@ -257,7 +259,15 @@ export default function CalendarPage() {
           <CardTitle className="text-gray-800">{getTitle()}</CardTitle>
           <div className="flex items-center gap-4">
             {/* PDF出力 */}
-            <PdfExportButton currentDate={currentDate} viewMode={viewMode} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPdfExportOpen(true)}
+              className="border-gray-200 text-gray-600 hover:bg-gray-100"
+            >
+              <FileDown className="h-4 w-4 mr-2" />
+              PDF出力
+            </Button>
 
             {/* 表示切替 */}
             <div className="flex rounded-lg overflow-hidden border border-gray-200">
@@ -362,6 +372,14 @@ export default function CalendarPage() {
         onClose={handleDialogClose}
         selectedDate={selectedDate}
         event={selectedEvent}
+      />
+
+      {/* PDF出力ダイアログ */}
+      <CalendarPdfExport
+        open={pdfExportOpen}
+        onClose={() => setPdfExportOpen(false)}
+        currentDate={currentDate}
+        events={filteredEvents}
       />
     </div>
   );
