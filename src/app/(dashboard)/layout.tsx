@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50/30">
+    <div className="min-h-screen bg-stone-50">
       <Sidebar />
       <div className="lg:pl-64">
         <Header user={session.user} />

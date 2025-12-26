@@ -30,7 +30,7 @@ export function Sidebar() {
         <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
           <div className="flex flex-shrink-0 items-center px-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-orange-400 rounded-xl flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-md">
                 <span className="text-lg">🏠</span>
               </div>
               <div>
@@ -49,7 +49,7 @@ export function Sidebar() {
                   className={cn(
                     'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                     isActive
-                      ? 'bg-gradient-to-r from-emerald-50 to-orange-50 text-emerald-600 border border-emerald-200'
+                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   )}
                 >

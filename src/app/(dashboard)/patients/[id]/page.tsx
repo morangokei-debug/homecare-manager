@@ -283,7 +283,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-cyan-600"
+                  className="bg-emerald-500 hover:from-emerald-600 hover:to-cyan-600"
                 >
                   {loading ? (
                     <>

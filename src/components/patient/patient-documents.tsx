@@ -487,7 +487,7 @@ export function PatientDocuments({ patientId }: Props) {
                   <Button
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="bg-gradient-to-r from-emerald-500 to-orange-500"
+                    className="bg-emerald-500"
                   >
                     {uploading ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />

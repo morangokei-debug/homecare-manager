@@ -405,7 +405,7 @@ export default function RemindersPage() {
           <Button
             onClick={saveSettings}
             disabled={saving}
-            className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-cyan-600"
+            className="bg-emerald-500 hover:from-emerald-600 hover:to-cyan-600"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />

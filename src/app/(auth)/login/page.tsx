@@ -41,10 +41,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-orange-50">
+    <div className="min-h-screen flex items-center justify-center bg-stone-100">
       <Card className="w-full max-w-md mx-4 bg-white/80 border-gray-200 backdrop-blur shadow-xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-emerald-400 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="mx-auto mb-4 w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-2xl">🏠</span>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-800">Homecare Manager</CardTitle>
@@ -86,7 +86,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-orange-600 text-white font-semibold shadow-md"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold shadow-md"
             >
               {loading ? 'ログイン中...' : 'ログイン'}
             </Button>

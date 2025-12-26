@@ -177,7 +177,7 @@ export default function CalendarPage() {
         {canEdit && (
           <Button
             onClick={() => handleNewEvent()}
-            className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-orange-600 text-white shadow-md"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-md"
           >
             <Plus className="h-4 w-4 mr-2" />
             新規イベント

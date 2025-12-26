@@ -62,7 +62,7 @@ export function Header({ user }: HeaderProps) {
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-orange-400 text-white text-sm">
+                  <AvatarFallback className="bg-emerald-500 text-white text-sm">
                     {initials}
                   </AvatarFallback>
                 </Avatar>

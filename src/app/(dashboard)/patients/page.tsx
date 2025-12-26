@@ -71,7 +71,7 @@ export default function PatientsPage() {
         </div>
         {canEdit && (
           <Link href="/patients/new">
-            <Button className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button className="bg-emerald-500 hover:from-emerald-600 hover:to-cyan-600">
               <Plus className="h-4 w-4 mr-2" />
               新規患者登録
             </Button>

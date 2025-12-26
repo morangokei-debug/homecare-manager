@@ -255,7 +255,7 @@ export default function SettingsPage() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-orange-500"
+                    className="w-full bg-emerald-500"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : '変更する'}
                   </Button>
