@@ -171,13 +171,13 @@ export default function CalendarPage() {
       {/* ページヘッダー */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">カレンダー</h1>
-          <p className="text-slate-400">訪問・処方スケジュールを管理</p>
+          <h1 className="text-2xl font-bold text-gray-800">カレンダー</h1>
+          <p className="text-gray-500">訪問・処方スケジュールを管理</p>
         </div>
         {canEdit && (
           <Button
             onClick={() => handleNewEvent()}
-            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-orange-600 text-white shadow-md"
           >
             <Plus className="h-4 w-4 mr-2" />
             新規イベント
@@ -187,13 +187,13 @@ export default function CalendarPage() {
 
       {/* フィルタ */}
       <div className="flex flex-wrap gap-3 items-center">
-        <div className="flex items-center gap-2 text-slate-400">
+        <div className="flex items-center gap-2 text-gray-500">
           <Filter className="h-4 w-4" />
           <span className="text-sm">フィルタ:</span>
         </div>
         {/* 担当者 */}
         <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-          <SelectTrigger className="w-[160px] bg-slate-800/50 border-slate-700 text-white">
+          <SelectTrigger className="w-[160px] bg-white border-gray-200 text-gray-700">
             <SelectValue placeholder="担当者" />
           </SelectTrigger>
           <SelectContent>
@@ -208,7 +208,7 @@ export default function CalendarPage() {
         </Select>
         {/* 種別 */}
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700 text-white">
+          <SelectTrigger className="w-[140px] bg-white border-gray-200 text-gray-700">
             <SelectValue placeholder="種別" />
           </SelectTrigger>
           <SelectContent>
@@ -219,7 +219,7 @@ export default function CalendarPage() {
         </Select>
         {/* ステータス */}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700 text-white">
+          <SelectTrigger className="w-[140px] bg-white border-gray-200 text-gray-700">
             <SelectValue placeholder="ステータス" />
           </SelectTrigger>
           <SelectContent>
@@ -237,28 +237,28 @@ export default function CalendarPage() {
               setTypeFilter('all');
               setStatusFilter('all');
             }}
-            className="text-slate-400 hover:text-white"
+            className="text-gray-500 hover:text-gray-700"
           >
             クリア
           </Button>
         )}
         {hasFilters && (
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-gray-500">
             ({filteredEvents.length}/{events.length}件表示)
           </span>
         )}
       </div>
 
       {/* カレンダーカード */}
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-white">{getTitle()}</CardTitle>
+          <CardTitle className="text-gray-800">{getTitle()}</CardTitle>
           <div className="flex items-center gap-4">
             {/* PDF出力 */}
             <PdfExportButton currentDate={currentDate} viewMode={viewMode} />
 
             {/* 表示切替 */}
-            <div className="flex rounded-lg overflow-hidden border border-slate-600">
+            <div className="flex rounded-lg overflow-hidden border border-gray-200">
               <Button
                 variant="ghost"
                 size="sm"
@@ -266,8 +266,8 @@ export default function CalendarPage() {
                 className={cn(
                   'rounded-none',
                   viewMode === 'day'
-                    ? 'bg-slate-700 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-emerald-500 text-white'
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
                 )}
               >
                 日
@@ -279,8 +279,8 @@ export default function CalendarPage() {
                 className={cn(
                   'rounded-none',
                   viewMode === 'week'
-                    ? 'bg-slate-700 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-emerald-500 text-white'
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
                 )}
               >
                 週
@@ -292,8 +292,8 @@ export default function CalendarPage() {
                 className={cn(
                   'rounded-none',
                   viewMode === 'month'
-                    ? 'bg-slate-700 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-emerald-500 text-white'
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
                 )}
               >
                 月
@@ -306,7 +306,7 @@ export default function CalendarPage() {
                 variant="outline"
                 size="icon"
                 onClick={handlePrev}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="border-gray-200 text-gray-600 hover:bg-gray-50"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -314,7 +314,7 @@ export default function CalendarPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleToday}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="border-gray-200 text-gray-600 hover:bg-gray-50"
               >
                 今日
               </Button>
@@ -322,7 +322,7 @@ export default function CalendarPage() {
                 variant="outline"
                 size="icon"
                 onClick={handleNext}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="border-gray-200 text-gray-600 hover:bg-gray-50"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>

@@ -86,7 +86,7 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
               key={day}
               className={cn(
                 'text-center text-sm font-medium py-2',
-                index === 0 ? 'text-red-400' : index === 6 ? 'text-blue-400' : 'text-slate-400'
+                index === 0 ? 'text-red-400' : index === 6 ? 'text-blue-400' : 'text-gray-500'
               )}
             >
               {day}
@@ -144,7 +144,7 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
                 className={cn(
                   'min-h-[100px] p-2 rounded-lg border transition-colors cursor-pointer',
                   isCurrentMonth
-                    ? 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                    ? 'bg-white border-gray-200 hover:border-gray-200'
                     : 'bg-slate-900/50 border-slate-800',
                   dayIsToday && 'ring-2 ring-emerald-500 border-emerald-500'
                 )}
@@ -155,7 +155,7 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
                     !isCurrentMonth && 'text-slate-600',
                     dayOfWeek === 0 && isCurrentMonth && 'text-red-400',
                     dayOfWeek === 6 && isCurrentMonth && 'text-blue-400',
-                    dayOfWeek !== 0 && dayOfWeek !== 6 && isCurrentMonth && 'text-slate-300',
+                    dayOfWeek !== 0 && dayOfWeek !== 6 && isCurrentMonth && 'text-gray-600',
                     dayIsToday && 'text-emerald-400'
                   )}
                 >
@@ -164,7 +164,7 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
                 <div className="space-y-1">
                   {displayItems}
                   {remainingCount > 0 && (
-                    <div className="text-xs text-slate-500">+{remainingCount}件</div>
+                    <div className="text-xs text-gray-400">+{remainingCount}件</div>
                   )}
                 </div>
               </div>
@@ -175,7 +175,7 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
 
       {/* 施設イベント一覧ダイアログ */}
       <Dialog open={facilityDialogOpen} onOpenChange={setFacilityDialogOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
+        <DialogContent className="bg-white border-gray-200 text-gray-800 max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span>🏢</span>
@@ -207,13 +207,13 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span>{event.type === 'visit' ? '🏠' : '💊'}</span>
-                      <span className="text-white font-medium">{event.patientName}</span>
+                      <span className="text-gray-800 font-medium">{event.patientName}</span>
                     </div>
                     {event.reportDone && (
                       <span className="text-green-400 text-sm">✓</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-slate-400">
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
                     {event.time && <span>{event.time}</span>}
                     <Badge
                       variant="outline"

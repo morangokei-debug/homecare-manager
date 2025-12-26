@@ -151,19 +151,19 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* ページヘッダー */}
       <div>
-        <h1 className="text-2xl font-bold text-white">設定</h1>
-        <p className="text-slate-400">アカウントとシステム設定</p>
+        <h1 className="text-2xl font-bold text-gray-800">設定</h1>
+        <p className="text-gray-500">アカウントとシステム設定</p>
       </div>
 
       {/* プロフィール */}
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-white border-gray-200">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
               <User className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <CardTitle className="text-white">プロフィール</CardTitle>
+              <CardTitle className="text-gray-800">プロフィール</CardTitle>
               <CardDescription>アカウント情報</CardDescription>
             </div>
           </div>
@@ -171,25 +171,25 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label className="text-slate-300">名前</Label>
+              <Label className="text-gray-600">名前</Label>
               <Input
                 value={session?.user?.name || ''}
                 disabled
-                className="bg-slate-700/50 border-slate-600 text-white"
+                className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">メールアドレス</Label>
+              <Label className="text-gray-600">メールアドレス</Label>
               <Input
                 value={session?.user?.email || ''}
                 disabled
-                className="bg-slate-700/50 border-slate-600 text-white"
+                className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label className="text-slate-300">権限:</Label>
+              <Label className="text-gray-600">権限:</Label>
               <Badge
                 variant="outline"
                 className={
@@ -205,18 +205,18 @@ export default function SettingsPage() {
             {/* パスワード変更ダイアログ */}
             <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="border-slate-600">
+                <Button variant="outline" className="border-gray-200">
                   <Key className="h-4 w-4 mr-2" />
                   パスワード変更
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-slate-800 border-slate-700 text-white">
+              <DialogContent className="bg-white border-gray-200 text-gray-800">
                 <DialogHeader>
                   <DialogTitle>パスワード変更</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handlePasswordChange} className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">現在のパスワード</Label>
+                    <Label className="text-gray-600">現在のパスワード</Label>
                     <Input
                       type="password"
                       value={passwordData.currentPassword}
@@ -224,11 +224,11 @@ export default function SettingsPage() {
                         setPasswordData({ ...passwordData, currentPassword: e.target.value })
                       }
                       required
-                      className="bg-slate-700/50 border-slate-600"
+                      className="bg-gray-50 border-gray-200"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">新しいパスワード（8文字以上）</Label>
+                    <Label className="text-gray-600">新しいパスワード（8文字以上）</Label>
                     <Input
                       type="password"
                       value={passwordData.newPassword}
@@ -237,11 +237,11 @@ export default function SettingsPage() {
                       }
                       required
                       minLength={8}
-                      className="bg-slate-700/50 border-slate-600"
+                      className="bg-gray-50 border-gray-200"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">新しいパスワード（確認）</Label>
+                    <Label className="text-gray-600">新しいパスワード（確認）</Label>
                     <Input
                       type="password"
                       value={passwordData.confirmPassword}
@@ -249,13 +249,13 @@ export default function SettingsPage() {
                         setPasswordData({ ...passwordData, confirmPassword: e.target.value })
                       }
                       required
-                      className="bg-slate-700/50 border-slate-600"
+                      className="bg-gray-50 border-gray-200"
                     />
                   </div>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+                    className="w-full bg-gradient-to-r from-emerald-500 to-orange-500"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : '変更する'}
                   </Button>
@@ -269,14 +269,14 @@ export default function SettingsPage() {
       {/* 管理者専用：ユーザー管理 */}
       {session?.user?.role === 'admin' && (
         <>
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="bg-white border-gray-200">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
                   <Shield className="h-5 w-5 text-purple-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-white">ユーザー作成</CardTitle>
+                  <CardTitle className="text-gray-800">ユーザー作成</CardTitle>
                   <CardDescription>新しいユーザーを追加</CardDescription>
                 </div>
               </div>
@@ -285,30 +285,30 @@ export default function SettingsPage() {
               <form onSubmit={handleCreateUser} className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">名前</Label>
+                    <Label className="text-gray-600">名前</Label>
                     <Input
                       value={newUserData.name}
                       onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
                       required
                       placeholder="山田 太郎"
-                      className="bg-slate-700/50 border-slate-600 text-white"
+                      className="bg-gray-50 border-gray-200 text-gray-800"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">メールアドレス</Label>
+                    <Label className="text-gray-600">メールアドレス</Label>
                     <Input
                       type="email"
                       value={newUserData.email}
                       onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
                       required
                       placeholder="user@example.com"
-                      className="bg-slate-700/50 border-slate-600 text-white"
+                      className="bg-gray-50 border-gray-200 text-gray-800"
                     />
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">パスワード（8文字以上）</Label>
+                    <Label className="text-gray-600">パスワード（8文字以上）</Label>
                     <Input
                       type="password"
                       value={newUserData.password}
@@ -316,15 +316,15 @@ export default function SettingsPage() {
                       required
                       minLength={8}
                       placeholder="••••••••"
-                      className="bg-slate-700/50 border-slate-600 text-white"
+                      className="bg-gray-50 border-gray-200 text-gray-800"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">権限</Label>
+                    <Label className="text-gray-600">権限</Label>
                     <select
                       value={newUserData.role}
                       onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value })}
-                      className="w-full h-10 px-3 rounded-md bg-slate-700/50 border border-slate-600 text-white"
+                      className="w-full h-10 px-3 rounded-md bg-gray-50 border border-gray-200 text-gray-800"
                     >
                       <option value="staff">スタッフ</option>
                       <option value="admin">管理者</option>
@@ -350,14 +350,14 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="bg-white border-gray-200">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
                   <Users className="h-5 w-5 text-blue-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-white">ユーザー一覧</CardTitle>
+                  <CardTitle className="text-gray-800">ユーザー一覧</CardTitle>
                   <CardDescription>登録済みユーザー</CardDescription>
                 </div>
               </div>
@@ -367,11 +367,11 @@ export default function SettingsPage() {
                 {users.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30"
+                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
                   >
                     <div>
-                      <div className="text-white font-medium">{user.name}</div>
-                      <div className="text-sm text-slate-400">{user.email}</div>
+                      <div className="text-gray-800 font-medium">{user.name}</div>
+                      <div className="text-sm text-gray-500">{user.email}</div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge
@@ -381,7 +381,7 @@ export default function SettingsPage() {
                             ? 'border-purple-500/50 text-purple-400'
                             : user.role === 'staff'
                             ? 'border-blue-500/50 text-blue-400'
-                            : 'border-slate-500/50 text-slate-400'
+                            : 'border-slate-500/50 text-gray-500'
                         }
                       >
                         {user.role === 'admin' ? '管理者' : user.role === 'staff' ? 'スタッフ' : '閲覧'}
@@ -399,25 +399,25 @@ export default function SettingsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setResetUserId(user.id)}
-                            className="text-slate-400 hover:text-white"
+                            className="text-gray-500 hover:text-gray-800"
                           >
                             <RotateCcw className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+                        <DialogContent className="bg-white border-gray-200 text-gray-800">
                           <DialogHeader>
                             <DialogTitle>パスワードリセット: {user.name}</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label className="text-slate-300">新しいパスワード（8文字以上）</Label>
+                              <Label className="text-gray-600">新しいパスワード（8文字以上）</Label>
                               <Input
                                 type="password"
                                 value={resetPassword}
                                 onChange={(e) => setResetPassword(e.target.value)}
                                 minLength={8}
                                 placeholder="••••••••"
-                                className="bg-slate-700/50 border-slate-600"
+                                className="bg-gray-50 border-gray-200"
                               />
                             </div>
                             <Button
@@ -434,7 +434,7 @@ export default function SettingsPage() {
                   </div>
                 ))}
                 {users.length === 0 && (
-                  <p className="text-slate-500 text-center py-4">ユーザーがいません</p>
+                  <p className="text-gray-400 text-center py-4">ユーザーがいません</p>
                 )}
               </div>
             </CardContent>

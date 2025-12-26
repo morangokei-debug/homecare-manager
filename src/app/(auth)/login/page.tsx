@@ -41,21 +41,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <Card className="w-full max-w-md mx-4 bg-slate-800/50 border-slate-700 backdrop-blur">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-orange-50">
+      <Card className="w-full max-w-md mx-4 bg-white/80 border-gray-200 backdrop-blur shadow-xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-2xl flex items-center justify-center">
+          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-emerald-400 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-2xl">🏠</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-white">Homecare Manager</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardTitle className="text-2xl font-bold text-gray-800">Homecare Manager</CardTitle>
+          <CardDescription className="text-gray-500">
             在宅訪問・処方管理システム
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">メールアドレス</Label>
+              <Label htmlFor="email" className="text-gray-700">メールアドレス</Label>
               <Input
                 id="email"
                 type="email"
@@ -63,11 +63,11 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@homecare.local"
                 required
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
+                className="bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-400"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">パスワード</Label>
+              <Label htmlFor="password" className="text-gray-700">パスワード</Label>
               <Input
                 id="password"
                 type="password"
@@ -75,18 +75,18 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
+                className="bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-400"
               />
             </div>
             {error && (
-              <div className="p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
                 {error}
               </div>
             )}
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-orange-600 text-white font-semibold shadow-md"
             >
               {loading ? 'ログイン中...' : 'ログイン'}
             </Button>

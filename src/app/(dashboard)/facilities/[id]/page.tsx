@@ -69,7 +69,7 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
   if (!facility) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
     );
   }
@@ -80,13 +80,13 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/facilities">
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+            <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-800">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-white">施設情報編集</h1>
-            <p className="text-slate-400">{facility.name}</p>
+            <h1 className="text-2xl font-bold text-gray-800">施設情報編集</h1>
+            <p className="text-gray-500">{facility.name}</p>
           </div>
         </div>
         <Button
@@ -108,13 +108,13 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
 
       {/* フォーム */}
       <form onSubmit={handleSubmit}>
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-white">基本情報</CardTitle>
+            <CardTitle className="text-gray-800">基本情報</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-300">
+              <Label htmlFor="name" className="text-gray-600">
                 施設名 <span className="text-red-400">*</span>
               </Label>
               <Input
@@ -122,13 +122,13 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
                 name="name"
                 required
                 defaultValue={facility.name}
-                className="bg-slate-700/50 border-slate-600 text-white"
+                className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-slate-300">
+                <Label htmlFor="phone" className="text-gray-600">
                   電話番号
                 </Label>
                 <Input
@@ -136,52 +136,52 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
                   name="phone"
                   type="tel"
                   defaultValue={facility.phone || ''}
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="area" className="text-slate-300">
+                <Label htmlFor="area" className="text-gray-600">
                   エリア
                 </Label>
                 <Input
                   id="area"
                   name="area"
                   defaultValue={facility.area || ''}
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-slate-300">
+              <Label htmlFor="address" className="text-gray-600">
                 住所
               </Label>
               <Input
                 id="address"
                 name="address"
                 defaultValue={facility.address || ''}
-                className="bg-slate-700/50 border-slate-600 text-white"
+                className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contactPerson" className="text-slate-300">
+              <Label htmlFor="contactPerson" className="text-gray-600">
                 担当者名
               </Label>
               <Input
                 id="contactPerson"
                 name="contactPerson"
                 defaultValue={facility.contactPerson || ''}
-                className="bg-slate-700/50 border-slate-600 text-white"
+                className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="displayMode" className="text-slate-300">
+              <Label htmlFor="displayMode" className="text-gray-600">
                 カレンダー表示モード
               </Label>
               <Select name="displayMode" defaultValue={facility.displayMode}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -189,13 +189,13 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
                   <SelectItem value="individual">患者ごとに個別表示</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-gray-400">
                 「まとめ表示」は施設内の複数患者を1つにまとめます。「個別表示」は患者ごとに表示します。
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-slate-300">
+              <Label htmlFor="notes" className="text-gray-600">
                 備考
               </Label>
               <Textarea
@@ -203,13 +203,13 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
                 name="notes"
                 defaultValue={facility.notes || ''}
                 rows={4}
-                className="bg-slate-700/50 border-slate-600 text-white resize-none"
+                className="bg-gray-50 border-gray-200 text-gray-800 resize-none"
               />
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
               <Link href="/facilities">
-                <Button type="button" variant="outline" className="border-slate-600">
+                <Button type="button" variant="outline" className="border-gray-200">
                   キャンセル
                 </Button>
               </Link>

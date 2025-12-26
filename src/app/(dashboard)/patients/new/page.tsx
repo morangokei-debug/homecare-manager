@@ -48,26 +48,26 @@ export default function NewPatientPage() {
       {/* ページヘッダー */}
       <div className="flex items-center gap-4">
         <Link href="/patients">
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-800">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">新規患者登録</h1>
-          <p className="text-slate-400">患者情報を入力してください</p>
+          <h1 className="text-2xl font-bold text-gray-800">新規患者登録</h1>
+          <p className="text-gray-500">患者情報を入力してください</p>
         </div>
       </div>
 
       {/* フォーム */}
       <form onSubmit={handleSubmit}>
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-white">基本情報</CardTitle>
+            <CardTitle className="text-gray-800">基本情報</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-slate-300">
+                <Label htmlFor="name" className="text-gray-600">
                   患者名 <span className="text-red-400">*</span>
                 </Label>
                 <Input
@@ -75,28 +75,28 @@ export default function NewPatientPage() {
                   name="name"
                   required
                   placeholder="山田 太郎"
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="nameKana" className="text-slate-300">
+                <Label htmlFor="nameKana" className="text-gray-600">
                   フリガナ
                 </Label>
                 <Input
                   id="nameKana"
                   name="nameKana"
                   placeholder="ヤマダ タロウ"
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="facilityId" className="text-slate-300">
+              <Label htmlFor="facilityId" className="text-gray-600">
                 所属施設
               </Label>
               <Select name="facilityId">
-                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                   <SelectValue placeholder="個人宅（施設なし）" />
                 </SelectTrigger>
                 <SelectContent>
@@ -108,14 +108,14 @@ export default function NewPatientPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-gray-400">
                 施設に所属する場合、カレンダーでの表示は施設の設定に従います
               </p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-slate-300">
+                <Label htmlFor="phone" className="text-gray-600">
                   電話番号
                 </Label>
                 <Input
@@ -123,36 +123,36 @@ export default function NewPatientPage() {
                   name="phone"
                   type="tel"
                   placeholder="090-1234-5678"
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="area" className="text-slate-300">
+                <Label htmlFor="area" className="text-gray-600">
                   エリア
                 </Label>
                 <Input
                   id="area"
                   name="area"
                   placeholder="東京都新宿区"
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-slate-300">
+              <Label htmlFor="address" className="text-gray-600">
                 住所
               </Label>
               <Input
                 id="address"
                 name="address"
                 placeholder="東京都新宿区西新宿1-1-1"
-                className="bg-slate-700/50 border-slate-600 text-white"
+                className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-slate-300">
+              <Label htmlFor="notes" className="text-gray-600">
                 備考
               </Label>
               <Textarea
@@ -160,20 +160,20 @@ export default function NewPatientPage() {
                 name="notes"
                 placeholder="特記事項があれば入力してください"
                 rows={4}
-                className="bg-slate-700/50 border-slate-600 text-white resize-none"
+                className="bg-gray-50 border-gray-200 text-gray-800 resize-none"
               />
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
               <Link href="/patients">
-                <Button type="button" variant="outline" className="border-slate-600">
+                <Button type="button" variant="outline" className="border-gray-200">
                   キャンセル
                 </Button>
               </Link>
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+                className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-cyan-600"
               >
                 {loading ? (
                   <>

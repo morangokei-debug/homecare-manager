@@ -56,7 +56,7 @@ export default function PatientsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
     );
   }
@@ -66,12 +66,12 @@ export default function PatientsPage() {
       {/* ページヘッダー */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">患者管理</h1>
-          <p className="text-slate-400">患者情報の一覧・登録・編集</p>
+          <h1 className="text-2xl font-bold text-gray-800">患者管理</h1>
+          <p className="text-gray-500">患者情報の一覧・登録・編集</p>
         </div>
         {canEdit && (
           <Link href="/patients/new">
-            <Button className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-cyan-600">
               <Plus className="h-4 w-4 mr-2" />
               新規患者登録
             </Button>
@@ -80,19 +80,19 @@ export default function PatientsPage() {
       </div>
 
       {/* 検索 */}
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-white border-gray-200">
         <CardContent className="pt-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               placeholder="患者名、カナ、エリア、施設名で検索..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
+              className="pl-10 bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-400"
             />
           </div>
           {searchQuery && (
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-gray-500">
               {filteredPatients.length}件の結果
             </p>
           )}
@@ -103,7 +103,7 @@ export default function PatientsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredPatients.map((patient) => (
           <Link key={patient.id} href={`/patients/${patient.id}`}>
-            <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors cursor-pointer h-full">
+            <Card className="bg-white border-gray-200 hover:border-gray-200 transition-colors cursor-pointer h-full">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
@@ -117,9 +117,9 @@ export default function PatientsPage() {
                       </div>
                     )}
                     <div>
-                      <CardTitle className="text-white text-lg">{patient.name}</CardTitle>
+                      <CardTitle className="text-gray-800 text-lg">{patient.name}</CardTitle>
                       {patient.nameKana && (
-                        <p className="text-xs text-slate-500">{patient.nameKana}</p>
+                        <p className="text-xs text-gray-400">{patient.nameKana}</p>
                       )}
                     </div>
                   </div>
@@ -137,19 +137,19 @@ export default function PatientsPage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {patient.facility && (
-                  <div className="flex items-center gap-2 text-slate-400">
+                  <div className="flex items-center gap-2 text-gray-500">
                     <Building2 className="h-3.5 w-3.5" />
                     <span>{patient.facility.name}</span>
                   </div>
                 )}
                 {patient.area && (
-                  <div className="flex items-center gap-2 text-slate-400">
+                  <div className="flex items-center gap-2 text-gray-500">
                     <MapPin className="h-3.5 w-3.5" />
                     <span>{patient.area}</span>
                   </div>
                 )}
                 {patient.phone && (
-                  <div className="flex items-center gap-2 text-slate-400">
+                  <div className="flex items-center gap-2 text-gray-500">
                     <Phone className="h-3.5 w-3.5" />
                     <span>{patient.phone}</span>
                   </div>
@@ -161,9 +161,9 @@ export default function PatientsPage() {
       </div>
 
       {filteredPatients.length === 0 && (
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardContent className="py-12 text-center">
-            <p className="text-slate-400">
+            <p className="text-gray-500">
               {searchQuery ? '検索結果がありません' : '患者が登録されていません'}
             </p>
             {!searchQuery && (

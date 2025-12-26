@@ -97,7 +97,7 @@ export function CalendarWeekView({ currentDate, events, onDateClick, onEventClic
                 <div
                   className={cn(
                     'text-sm font-medium',
-                    index === 0 ? 'text-red-400' : index === 6 ? 'text-blue-400' : 'text-slate-400'
+                    index === 0 ? 'text-red-400' : index === 6 ? 'text-blue-400' : 'text-gray-500'
                   )}
                 >
                   {weekDays[index]}
@@ -105,7 +105,7 @@ export function CalendarWeekView({ currentDate, events, onDateClick, onEventClic
                 <div
                   className={cn(
                     'text-2xl font-bold mt-1',
-                    dayIsToday ? 'text-emerald-400' : 'text-white'
+                    dayIsToday ? 'text-emerald-400' : 'text-gray-800'
                   )}
                 >
                   {format(day, 'd')}
@@ -127,7 +127,7 @@ export function CalendarWeekView({ currentDate, events, onDateClick, onEventClic
                 onClick={() => onDateClick(day)}
                 className={cn(
                   'min-h-[300px] p-2 rounded-lg border transition-colors cursor-pointer',
-                  'bg-slate-800/50 border-slate-700 hover:border-slate-600',
+                  'bg-white border-gray-200 hover:border-gray-200',
                   dayIsToday && 'ring-2 ring-emerald-500 border-emerald-500'
                 )}
               >
@@ -165,7 +165,7 @@ export function CalendarWeekView({ currentDate, events, onDateClick, onEventClic
 
       {/* 施設イベント一覧ダイアログ */}
       <Dialog open={facilityDialogOpen} onOpenChange={setFacilityDialogOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
+        <DialogContent className="bg-white border-gray-200 text-gray-800 max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span>🏢</span>
@@ -197,13 +197,13 @@ export function CalendarWeekView({ currentDate, events, onDateClick, onEventClic
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span>{event.type === 'visit' ? '🏠' : '💊'}</span>
-                      <span className="text-white font-medium">{event.patientName}</span>
+                      <span className="text-gray-800 font-medium">{event.patientName}</span>
                     </div>
                     {event.reportDone && (
                       <span className="text-green-400 text-sm">✓</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-slate-400">
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
                     {event.time && <span>{event.time}</span>}
                     <Badge
                       variant="outline"
@@ -250,12 +250,12 @@ function FacilityGroupCard({ group, onClick }: { group: GroupedFacilityEvents; o
           <span className="text-yellow-400 text-xs">◐</span>
         )}
       </div>
-      <div className="text-sm font-medium mt-1 text-white truncate">
+      <div className="text-sm font-medium mt-1 text-gray-800 truncate">
         {group.facilityName}
       </div>
       <div className="flex items-center gap-1 mt-1">
         {hasVisit && <span className="text-xs text-emerald-400">訪問</span>}
-        {hasVisit && hasPrescription && <span className="text-xs text-slate-500">・</span>}
+        {hasVisit && hasPrescription && <span className="text-xs text-gray-400">・</span>}
         {hasPrescription && <span className="text-xs text-purple-400">処方</span>}
       </div>
     </div>
@@ -293,16 +293,16 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
           <span className="text-green-400 text-xs" title="報告書済">✓</span>
         )}
       </div>
-      <div className="text-sm font-medium mt-1 text-white">
+      <div className="text-sm font-medium mt-1 text-gray-800">
         {displayName}
       </div>
       {event.time && (
-        <div className="text-xs text-slate-400 mt-1">
+        <div className="text-xs text-gray-500 mt-1">
           {event.time}
         </div>
       )}
       {event.assigneeName && (
-        <div className="text-xs text-slate-500 mt-1">
+        <div className="text-xs text-gray-400 mt-1">
           担当: {event.assigneeName}
         </div>
       )}

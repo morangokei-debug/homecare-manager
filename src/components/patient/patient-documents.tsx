@@ -214,9 +214,9 @@ export function PatientDocuments({ patientId }: Props) {
 
   return (
     <>
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-white border-gray-200">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="text-gray-800 flex items-center gap-2">
             <FileText className="h-5 w-5" />
             ドキュメント・写真
             <Badge variant="secondary" className="ml-2">
@@ -229,7 +229,7 @@ export function PatientDocuments({ patientId }: Props) {
                 variant="outline"
                 size="sm"
                 onClick={() => openUploadDialog('camera')}
-                className="border-slate-600"
+                className="border-gray-200"
               >
                 <Camera className="h-4 w-4 mr-2" />
                 カメラで撮影
@@ -242,7 +242,7 @@ export function PatientDocuments({ patientId }: Props) {
                   setSelectedFile(null);
                   setUploadForm({ type: 'other', description: '' });
                 }}
-                className="border-slate-600"
+                className="border-gray-200"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 ファイル選択
@@ -253,10 +253,10 @@ export function PatientDocuments({ patientId }: Props) {
         <CardContent>
           {loading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
             </div>
           ) : documents.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
+            <div className="text-center py-8 text-gray-400">
               <FileIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>まだドキュメントがありません</p>
               {canEdit && (
@@ -270,7 +270,7 @@ export function PatientDocuments({ patientId }: Props) {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700"
+                  className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="flex-shrink-0">
@@ -279,12 +279,12 @@ export function PatientDocuments({ patientId }: Props) {
                       ) : isPdf(doc.mimeType) ? (
                         <FileText className="h-8 w-8 text-red-400" />
                       ) : (
-                        <FileIcon className="h-8 w-8 text-slate-400" />
+                        <FileIcon className="h-8 w-8 text-gray-500" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-white font-medium truncate">
+                        <span className="text-gray-800 font-medium truncate">
                           {doc.fileName}
                         </span>
                         <Badge
@@ -292,13 +292,13 @@ export function PatientDocuments({ patientId }: Props) {
                           className={`${
                             DOCUMENT_TYPES[doc.type as keyof typeof DOCUMENT_TYPES]?.color ||
                             'bg-gray-500'
-                          } text-white text-xs`}
+                          } text-gray-800 text-xs`}
                         >
                           {DOCUMENT_TYPES[doc.type as keyof typeof DOCUMENT_TYPES]?.label ||
                             doc.type}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                         <span>{formatFileSize(doc.fileSize)}</span>
                         <span>•</span>
                         <span>
@@ -312,7 +312,7 @@ export function PatientDocuments({ patientId }: Props) {
                         )}
                       </div>
                       {doc.description && (
-                        <p className="text-xs text-slate-400 mt-1 truncate">
+                        <p className="text-xs text-gray-500 mt-1 truncate">
                           {doc.description}
                         </p>
                       )}
@@ -323,7 +323,7 @@ export function PatientDocuments({ patientId }: Props) {
                       variant="ghost"
                       size="icon"
                       onClick={() => handlePreview(doc.id)}
-                      className="h-8 w-8 text-slate-400 hover:text-white"
+                      className="h-8 w-8 text-gray-500 hover:text-gray-800"
                       title="プレビュー"
                     >
                       <Eye className="h-4 w-4" />
@@ -332,7 +332,7 @@ export function PatientDocuments({ patientId }: Props) {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDownload(doc.id, doc.fileName)}
-                      className="h-8 w-8 text-slate-400 hover:text-white"
+                      className="h-8 w-8 text-gray-500 hover:text-gray-800"
                       title="ダウンロード"
                     >
                       <Download className="h-4 w-4" />
@@ -342,7 +342,7 @@ export function PatientDocuments({ patientId }: Props) {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(doc.id)}
-                        className="h-8 w-8 text-slate-400 hover:text-red-400"
+                        className="h-8 w-8 text-gray-500 hover:text-red-400"
                         title="削除"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -358,7 +358,7 @@ export function PatientDocuments({ patientId }: Props) {
 
       {/* アップロードダイアログ */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+        <DialogContent className="bg-white border-gray-200 text-gray-800">
           <DialogHeader>
             <DialogTitle>ファイルアップロード</DialogTitle>
           </DialogHeader>
@@ -373,12 +373,12 @@ export function PatientDocuments({ patientId }: Props) {
               className="hidden"
             />
 
-            {/* 隠しinput: カメラ撮影用 */}
+            {/* 隠しinput: カメラ撮影用（モバイル） */}
             <input
               ref={cameraInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
+              capture
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -388,22 +388,22 @@ export function PatientDocuments({ patientId }: Props) {
               <div className="space-y-3">
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center cursor-pointer hover:border-slate-500 transition-colors"
+                  className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center cursor-pointer hover:border-slate-500 transition-colors"
                 >
-                  <Upload className="h-10 w-10 mx-auto mb-3 text-slate-400" />
-                  <p className="text-slate-300">クリックしてファイルを選択</p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <Upload className="h-10 w-10 mx-auto mb-3 text-gray-500" />
+                  <p className="text-gray-600">クリックしてファイルを選択</p>
+                  <p className="text-xs text-gray-400 mt-1">
                     PDF, JPEG, PNG, HEIC (最大10MB)
                   </p>
                 </div>
 
-                <div className="text-center text-slate-500">または</div>
+                <div className="text-center text-gray-400">または</div>
 
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => cameraInputRef.current?.click()}
-                  className="w-full border-slate-600"
+                  className="w-full border-gray-200"
                 >
                   <Camera className="h-4 w-4 mr-2" />
                   カメラで撮影
@@ -412,15 +412,15 @@ export function PatientDocuments({ patientId }: Props) {
             ) : (
               <div className="space-y-4">
                 {/* 選択されたファイル表示 */}
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
                   {selectedFile.type.startsWith('image/') ? (
                     <Image className="h-8 w-8 text-pink-400" />
                   ) : (
                     <FileText className="h-8 w-8 text-red-400" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-white truncate">{selectedFile.name}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-gray-800 truncate">{selectedFile.name}</p>
+                    <p className="text-xs text-gray-500">
                       {formatFileSize(selectedFile.size)}
                     </p>
                   </div>
@@ -429,7 +429,7 @@ export function PatientDocuments({ patientId }: Props) {
                     variant="ghost"
                     size="icon"
                     onClick={() => setSelectedFile(null)}
-                    className="text-slate-400 hover:text-white"
+                    className="text-gray-500 hover:text-gray-800"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -437,14 +437,14 @@ export function PatientDocuments({ patientId }: Props) {
 
                 {/* ドキュメント種別 */}
                 <div className="space-y-2">
-                  <Label className="text-slate-300">ドキュメント種別</Label>
+                  <Label className="text-gray-600">ドキュメント種別</Label>
                   <Select
                     value={uploadForm.type}
                     onValueChange={(value) =>
                       setUploadForm((prev) => ({ ...prev, type: value }))
                     }
                   >
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600">
+                    <SelectTrigger className="bg-gray-50 border-gray-200">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -459,7 +459,7 @@ export function PatientDocuments({ patientId }: Props) {
 
                 {/* 説明 */}
                 <div className="space-y-2">
-                  <Label className="text-slate-300">説明（任意）</Label>
+                  <Label className="text-gray-600">説明（任意）</Label>
                   <Input
                     value={uploadForm.description}
                     onChange={(e) =>
@@ -469,7 +469,7 @@ export function PatientDocuments({ patientId }: Props) {
                       }))
                     }
                     placeholder="例: 2024年1月の検査結果"
-                    className="bg-slate-700/50 border-slate-600"
+                    className="bg-gray-50 border-gray-200"
                     maxLength={200}
                   />
                 </div>
@@ -480,14 +480,14 @@ export function PatientDocuments({ patientId }: Props) {
                     type="button"
                     variant="outline"
                     onClick={() => setUploadDialogOpen(false)}
-                    className="border-slate-600"
+                    className="border-gray-200"
                   >
                     キャンセル
                   </Button>
                   <Button
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="bg-gradient-to-r from-emerald-500 to-cyan-500"
+                    className="bg-gradient-to-r from-emerald-500 to-orange-500"
                   >
                     {uploading ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -505,7 +505,7 @@ export function PatientDocuments({ patientId }: Props) {
 
       {/* プレビューダイアログ */}
       <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[90vh]">
+        <DialogContent className="bg-white border-gray-200 text-gray-800 max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>プレビュー</DialogTitle>
           </DialogHeader>

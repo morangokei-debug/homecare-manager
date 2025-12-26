@@ -168,14 +168,14 @@ export default function RemindersPage() {
       {/* ページヘッダー */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">リマインド</h1>
-          <p className="text-slate-400">予定の通知と設定</p>
+          <h1 className="text-2xl font-bold text-gray-800">リマインド</h1>
+          <p className="text-gray-500">予定の通知と設定</p>
         </div>
         {unreadCount > 0 && (
           <Button
             variant="outline"
             onClick={markAllAsRead}
-            className="border-slate-600 text-slate-300"
+            className="border-gray-200 text-gray-600"
           >
             <Check className="h-4 w-4 mr-2" />
             すべて既読にする
@@ -184,15 +184,15 @@ export default function RemindersPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-slate-800/50 border border-slate-700">
-          <TabsTrigger value="reminders" className="data-[state=active]:bg-slate-700">
+        <TabsList className="bg-white border border-gray-200">
+          <TabsTrigger value="reminders" className="data-[state=active]:bg-gray-100">
             <Bell className="h-4 w-4 mr-2" />
             リマインド一覧
             {unreadCount > 0 && (
-              <Badge className="ml-2 bg-red-500 text-white">{unreadCount}</Badge>
+              <Badge className="ml-2 bg-red-500 text-gray-800">{unreadCount}</Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="settings" className="data-[state=active]:bg-slate-700">
+          <TabsTrigger value="settings" className="data-[state=active]:bg-gray-100">
             <Settings2 className="h-4 w-4 mr-2" />
             通知設定
           </TabsTrigger>
@@ -202,13 +202,13 @@ export default function RemindersPage() {
         <TabsContent value="reminders" className="mt-4">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
             </div>
           ) : reminders.length === 0 ? (
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-white border-gray-200">
               <CardContent className="py-12 text-center">
-                <BellOff className="h-12 w-12 mx-auto text-slate-500 mb-4" />
-                <p className="text-slate-400">リマインドはありません</p>
+                <BellOff className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500">リマインドはありません</p>
               </CardContent>
             </Card>
           ) : (
@@ -216,10 +216,10 @@ export default function RemindersPage() {
               {reminders.map((reminder) => (
                 <Card
                   key={reminder.id}
-                  className={`border-slate-700 transition-colors ${
+                  className={`border-gray-200 transition-colors ${
                     reminder.isRead
-                      ? 'bg-slate-800/30'
-                      : 'bg-slate-800/50 border-l-4 border-l-emerald-500'
+                      ? 'bg-white/30'
+                      : 'bg-white border-l-4 border-l-emerald-500'
                   }`}
                 >
                   <CardContent className="py-4">
@@ -244,7 +244,7 @@ export default function RemindersPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-white font-medium">
+                            <span className="text-gray-800 font-medium">
                               {reminder.event.patient.facility?.name ||
                                 reminder.event.patient.name}
                             </span>
@@ -259,7 +259,7 @@ export default function RemindersPage() {
                               {reminder.event.type === 'visit' ? '訪問' : '処方'}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-3 mt-1 text-sm text-slate-400">
+                          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3.5 w-3.5" />
                               {getDateLabel(reminder.event.date)}
@@ -271,7 +271,7 @@ export default function RemindersPage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-slate-500 mt-1">{reminder.message}</p>
+                          <p className="text-sm text-gray-400 mt-1">{reminder.message}</p>
                         </div>
                       </div>
                       {!reminder.isRead && (
@@ -279,7 +279,7 @@ export default function RemindersPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => markAsRead(reminder.id)}
-                          className="text-slate-400 hover:text-white"
+                          className="text-gray-500 hover:text-gray-800"
                         >
                           <Check className="h-4 w-4" />
                         </Button>
@@ -295,7 +295,7 @@ export default function RemindersPage() {
         {/* 通知設定 */}
         <TabsContent value="settings" className="mt-4 space-y-4">
           {/* 訪問リマインド */}
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="bg-white border-gray-200">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -303,7 +303,7 @@ export default function RemindersPage() {
                     <Home className="h-5 w-5 text-emerald-400" />
                   </div>
                   <div>
-                    <CardTitle className="text-white">訪問リマインド</CardTitle>
+                    <CardTitle className="text-gray-800">訪問リマインド</CardTitle>
                     <CardDescription>訪問予定の通知設定</CardDescription>
                   </div>
                 </div>
@@ -315,7 +315,7 @@ export default function RemindersPage() {
                       setSettings({ ...settings, visitEnabled: checked as boolean })
                     }
                   />
-                  <Label htmlFor="visitEnabled" className="text-slate-300">
+                  <Label htmlFor="visitEnabled" className="text-gray-600">
                     有効
                   </Label>
                 </div>
@@ -323,12 +323,12 @@ export default function RemindersPage() {
             </CardHeader>
             {settings.visitEnabled && (
               <CardContent className="space-y-3">
-                <p className="text-sm text-slate-400">通知タイミング</p>
+                <p className="text-sm text-gray-500">通知タイミング</p>
                 <div className="grid gap-2 md:grid-cols-2">
                   {visitTimingOptions.map((option) => (
                     <div
                       key={option.value}
-                      className="flex items-center space-x-2 p-3 rounded-lg bg-slate-700/30"
+                      className="flex items-center space-x-2 p-3 rounded-lg bg-gray-50"
                     >
                       <Checkbox
                         id={`visit-${option.value}`}
@@ -337,7 +337,7 @@ export default function RemindersPage() {
                       />
                       <Label
                         htmlFor={`visit-${option.value}`}
-                        className="text-slate-300 cursor-pointer"
+                        className="text-gray-600 cursor-pointer"
                       >
                         {option.label}
                       </Label>
@@ -349,7 +349,7 @@ export default function RemindersPage() {
           </Card>
 
           {/* 処方リマインド */}
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="bg-white border-gray-200">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -357,7 +357,7 @@ export default function RemindersPage() {
                     <Pill className="h-5 w-5 text-purple-400" />
                   </div>
                   <div>
-                    <CardTitle className="text-white">処方リマインド</CardTitle>
+                    <CardTitle className="text-gray-800">処方リマインド</CardTitle>
                     <CardDescription>処方予定の通知設定</CardDescription>
                   </div>
                 </div>
@@ -369,7 +369,7 @@ export default function RemindersPage() {
                       setSettings({ ...settings, rxEnabled: checked as boolean })
                     }
                   />
-                  <Label htmlFor="rxEnabled" className="text-slate-300">
+                  <Label htmlFor="rxEnabled" className="text-gray-600">
                     有効
                   </Label>
                 </div>
@@ -377,12 +377,12 @@ export default function RemindersPage() {
             </CardHeader>
             {settings.rxEnabled && (
               <CardContent className="space-y-3">
-                <p className="text-sm text-slate-400">通知タイミング</p>
+                <p className="text-sm text-gray-500">通知タイミング</p>
                 <div className="grid gap-2 md:grid-cols-2">
                   {rxTimingOptions.map((option) => (
                     <div
                       key={option.value}
-                      className="flex items-center space-x-2 p-3 rounded-lg bg-slate-700/30"
+                      className="flex items-center space-x-2 p-3 rounded-lg bg-gray-50"
                     >
                       <Checkbox
                         id={`rx-${option.value}`}
@@ -391,7 +391,7 @@ export default function RemindersPage() {
                       />
                       <Label
                         htmlFor={`rx-${option.value}`}
-                        className="text-slate-300 cursor-pointer"
+                        className="text-gray-600 cursor-pointer"
                       >
                         {option.label}
                       </Label>
@@ -405,7 +405,7 @@ export default function RemindersPage() {
           <Button
             onClick={saveSettings}
             disabled={saving}
-            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-cyan-600"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />

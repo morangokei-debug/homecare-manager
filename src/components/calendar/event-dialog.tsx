@@ -204,7 +204,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-white border-gray-200 text-white max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {!canEdit ? 'イベント詳細' : event ? 'イベント編集' : '新規イベント登録'}
@@ -214,14 +214,14 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* イベント種別 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">種別</Label>
+            <Label className="text-gray-600">種別</Label>
             <Select
               value={formData.type}
               onValueChange={(value: 'visit' | 'prescription') =>
                 setFormData({ ...formData, type: value })
               }
             >
-              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -233,14 +233,14 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* ステータス */}
           <div className="space-y-2">
-            <Label className="text-slate-300">ステータス</Label>
+            <Label className="text-gray-600">ステータス</Label>
             <Select
               value={formData.status}
               onValueChange={(value: 'draft' | 'confirmed') =>
                 setFormData({ ...formData, status: value })
               }
             >
-              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -252,38 +252,38 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* 日付 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">日付 <span className="text-red-400">*</span></Label>
+            <Label className="text-gray-600">日付 <span className="text-red-400">*</span></Label>
             <Input
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               required
-              className="bg-slate-700/50 border-slate-600"
+              className="bg-gray-50 border-gray-200"
             />
           </div>
 
           {/* 予定時刻（任意） */}
           <div className="space-y-2">
-            <Label className="text-slate-300">
+            <Label className="text-gray-600">
               予定時刻
-              <span className="text-slate-500 text-xs ml-2">（任意）</span>
+              <span className="text-gray-400 text-xs ml-2">（任意）</span>
             </Label>
             <Input
               type="time"
               value={formData.time}
               onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-              className="bg-slate-700/50 border-slate-600"
+              className="bg-gray-50 border-gray-200"
             />
           </div>
 
           {/* 患者フィルタ */}
           <div className="space-y-2">
-            <Label className="text-slate-300">患者を絞り込み</Label>
+            <Label className="text-gray-600">患者を絞り込み</Label>
             <Select
               value={patientFilter}
               onValueChange={(value) => setPatientFilter(value)}
             >
-              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -301,7 +301,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 </SelectItem>
                 {facilities.length > 0 && (
                   <>
-                    <div className="px-2 py-1.5 text-xs text-slate-500 border-t border-slate-700 mt-1">
+                    <div className="px-2 py-1.5 text-xs text-gray-400 border-t border-gray-200 mt-1">
                       施設で絞り込み
                     </div>
                     {facilities.map((facility) => (
@@ -320,9 +320,9 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* 患者 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">
+            <Label className="text-gray-600">
               患者 <span className="text-red-400">*</span>
-              <span className="text-slate-500 text-xs ml-2">
+              <span className="text-gray-400 text-xs ml-2">
                 ({filteredPatients.length}名)
               </span>
             </Label>
@@ -332,7 +332,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 onValueChange={(value) => setFormData({ ...formData, patientId: value })}
                 required
               >
-                <SelectTrigger className="bg-slate-700/50 border-slate-600 flex-1">
+                <SelectTrigger className="bg-gray-50 border-gray-200 flex-1">
                   <SelectValue placeholder="患者を選択" />
                 </SelectTrigger>
                 <SelectContent>
@@ -346,7 +346,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                         )}
                         <span>{patient.name}</span>
                         {patient.facility && (
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-gray-500">
                             ({patient.facility.name})
                           </span>
                         )}
@@ -354,7 +354,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                     </SelectItem>
                   ))}
                   {filteredPatients.length === 0 && (
-                    <div className="px-2 py-4 text-center text-slate-500 text-sm">
+                    <div className="px-2 py-4 text-center text-gray-400 text-sm">
                       該当する患者がいません
                     </div>
                   )}
@@ -366,7 +366,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="border-slate-600 hover:bg-slate-700"
+                    className="border-gray-200 hover:bg-gray-100"
                     title="患者詳細を見る"
                   >
                     <ExternalLink className="h-4 w-4" />
@@ -378,12 +378,12 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* 担当者 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">担当者</Label>
+            <Label className="text-gray-600">担当者</Label>
             <Select
               value={formData.assigneeId}
               onValueChange={(value) => setFormData({ ...formData, assigneeId: value })}
             >
-              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue placeholder="担当者を選択（任意）" />
               </SelectTrigger>
               <SelectContent>
@@ -399,7 +399,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* 定期処方設定（処方の場合のみ） */}
           {formData.type === 'prescription' && (
-            <div className="space-y-3 p-3 rounded-lg bg-slate-700/30 border border-slate-600">
+            <div className="space-y-3 p-3 rounded-lg bg-gray-100/30 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="isRecurring"
@@ -408,13 +408,13 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                     setFormData({ ...formData, isRecurring: checked as boolean })
                   }
                 />
-                <Label htmlFor="isRecurring" className="text-slate-300">
+                <Label htmlFor="isRecurring" className="text-gray-600">
                   定期処方
                 </Label>
               </div>
               {formData.isRecurring && (
                 <div className="space-y-2">
-                  <Label className="text-slate-300 text-sm">間隔（日数）</Label>
+                  <Label className="text-gray-600 text-sm">間隔（日数）</Label>
                   <Input
                     type="number"
                     min="1"
@@ -423,7 +423,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                       setFormData({ ...formData, recurringInterval: e.target.value })
                     }
                     placeholder="例: 28"
-                    className="bg-slate-700/50 border-slate-600"
+                    className="bg-gray-50 border-gray-200"
                   />
                   {event && formData.recurringInterval && (
                     <Button
@@ -444,19 +444,19 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* 備考 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">備考</Label>
+            <Label className="text-gray-600">備考</Label>
             <Textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="メモを入力"
               rows={3}
-              className="bg-slate-700/50 border-slate-600 resize-none"
+              className="bg-gray-50 border-gray-200 resize-none"
             />
           </div>
 
           {/* 書類チェック */}
           {event && (
-            <div className="space-y-3 p-3 rounded-lg bg-slate-700/30 border border-slate-600">
+            <div className="space-y-3 p-3 rounded-lg bg-gray-100/30 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="reportDone"
@@ -478,7 +478,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                   }
                   className="h-3.5 w-3.5"
                 />
-                <Label htmlFor="planDone" className="text-slate-400 text-sm">
+                <Label htmlFor="planDone" className="text-gray-500 text-sm">
                   📋 計画書 記載済み（該当時のみ）
                 </Label>
               </div>
@@ -512,7 +512,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="border-slate-600"
+                className="border-gray-200"
               >
                 {canEdit ? 'キャンセル' : '閉じる'}
               </Button>

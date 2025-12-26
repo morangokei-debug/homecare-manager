@@ -120,26 +120,26 @@ export default function EventsPage() {
       {/* ページヘッダー */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">イベント一覧</h1>
-          <p className="text-slate-400">訪問・処方スケジュールをリスト表示</p>
+          <h1 className="text-2xl font-bold text-gray-800">イベント一覧</h1>
+          <p className="text-gray-500">訪問・処方スケジュールをリスト表示</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="icon"
             onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            className="border-gray-200 text-gray-600 hover:bg-gray-100"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-white font-medium min-w-[120px] text-center">
+          <span className="text-gray-800 font-medium min-w-[120px] text-center">
             {format(currentMonth, 'yyyy年M月', { locale: ja })}
           </span>
           <Button
             variant="outline"
             size="icon"
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            className="border-gray-200 text-gray-600 hover:bg-gray-100"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -147,22 +147,22 @@ export default function EventsPage() {
       </div>
 
       {/* フィルタ */}
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-white border-gray-200">
         <CardContent className="pt-6">
           <div className="grid gap-4 md:grid-cols-5">
             {/* 検索 */}
             <div className="md:col-span-2 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="患者名、施設名、担当者で検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-slate-700/50 border-slate-600 text-white"
+                className="pl-10 bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
             {/* 種別 */}
             <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as typeof typeFilter)}>
-              <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue placeholder="種別" />
               </SelectTrigger>
               <SelectContent>
@@ -173,7 +173,7 @@ export default function EventsPage() {
             </Select>
             {/* ステータス */}
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
-              <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue placeholder="ステータス" />
               </SelectTrigger>
               <SelectContent>
@@ -184,7 +184,7 @@ export default function EventsPage() {
             </Select>
             {/* 完了状態 */}
             <Select value={completedFilter} onValueChange={(v) => setCompletedFilter(v as typeof completedFilter)}>
-              <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+              <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                 <SelectValue placeholder="完了状態" />
               </SelectTrigger>
               <SelectContent>
@@ -220,7 +220,7 @@ export default function EventsPage() {
             size="sm"
             variant="ghost"
             onClick={() => setSelectedIds([])}
-            className="text-slate-400"
+            className="text-gray-500"
           >
             選択解除
           </Button>
@@ -228,16 +228,16 @@ export default function EventsPage() {
       )}
 
       {/* イベント一覧 */}
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-white border-gray-200">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-white">
+          <CardTitle className="text-gray-800">
             {filteredEvents.length}件のイベント
           </CardTitle>
           <Button
             variant="outline"
             size="sm"
             onClick={selectAllDrafts}
-            className="border-slate-600 text-slate-300"
+            className="border-gray-200 text-gray-600"
           >
             下書きを全選択
           </Button>
@@ -245,31 +245,31 @@ export default function EventsPage() {
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
             </div>
           ) : filteredEvents.length === 0 ? (
-            <div className="text-center py-12 text-slate-400">
+            <div className="text-center py-12 text-gray-500">
               イベントがありません
             </div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-700">
+                <TableRow className="border-gray-200">
                   <TableHead className="w-12"></TableHead>
-                  <TableHead className="text-slate-400">日付</TableHead>
-                  <TableHead className="text-slate-400">時刻</TableHead>
-                  <TableHead className="text-slate-400">種別</TableHead>
-                  <TableHead className="text-slate-400">患者/施設</TableHead>
-                  <TableHead className="text-slate-400">担当者</TableHead>
-                  <TableHead className="text-slate-400">報告</TableHead>
-                    <TableHead className="text-slate-400">状態</TableHead>
+                  <TableHead className="text-gray-500">日付</TableHead>
+                  <TableHead className="text-gray-500">時刻</TableHead>
+                  <TableHead className="text-gray-500">種別</TableHead>
+                  <TableHead className="text-gray-500">患者/施設</TableHead>
+                  <TableHead className="text-gray-500">担当者</TableHead>
+                  <TableHead className="text-gray-500">報告</TableHead>
+                    <TableHead className="text-gray-500">状態</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEvents.map((event) => (
                   <TableRow
                     key={event.id}
-                    className="border-slate-700 cursor-pointer hover:bg-slate-700/50"
+                    className="border-gray-200 cursor-pointer hover:bg-gray-50"
                     onClick={() => {
                       setSelectedEvent(event);
                       setDialogOpen(true);
@@ -280,13 +280,13 @@ export default function EventsPage() {
                         type="checkbox"
                         checked={selectedIds.includes(event.id)}
                         onChange={() => toggleSelect(event.id)}
-                        className="rounded border-slate-600"
+                        className="rounded border-gray-200"
                       />
                     </TableCell>
-                    <TableCell className="text-white">
+                    <TableCell className="text-gray-800">
                       {format(new Date(event.date), 'M/d (E)', { locale: ja })}
                     </TableCell>
-                    <TableCell className="text-slate-300">
+                    <TableCell className="text-gray-600">
                       {event.time || '--:--'}
                     </TableCell>
                     <TableCell>
@@ -301,7 +301,7 @@ export default function EventsPage() {
                         {event.facilityName && event.displayMode === 'grouped' ? (
                           <>
                             <Building2 className="h-4 w-4 text-blue-400" />
-                            <span className="text-white">{event.facilityName}</span>
+                            <span className="text-gray-800">{event.facilityName}</span>
                           </>
                         ) : (
                           <>
@@ -310,12 +310,12 @@ export default function EventsPage() {
                             ) : (
                               <Home className="h-4 w-4 text-emerald-400" />
                             )}
-                            <span className="text-white">{event.patientName}</span>
+                            <span className="text-gray-800">{event.patientName}</span>
                           </>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-slate-300">
+                    <TableCell className="text-gray-600">
                       {event.assigneeName || '-'}
                     </TableCell>
                     <TableCell>
@@ -340,7 +340,7 @@ export default function EventsPage() {
                         {event.isCompleted && (
                           <Badge
                             variant="outline"
-                            className="border-slate-500/50 text-slate-400"
+                            className="border-slate-500/50 text-gray-500"
                           >
                             完了
                           </Badge>

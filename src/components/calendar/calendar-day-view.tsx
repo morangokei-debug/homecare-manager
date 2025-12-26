@@ -106,13 +106,13 @@ export function CalendarDayView({ currentDate, events, onEventClick }: CalendarD
             dayIsToday && 'bg-emerald-500/20'
           )}
         >
-          <div className="text-sm text-slate-400">
+          <div className="text-sm text-gray-500">
             {format(currentDate, 'yyyy年M月', { locale: ja })}
           </div>
           <div
             className={cn(
               'text-4xl font-bold mt-1',
-              dayIsToday ? 'text-emerald-400' : 'text-white'
+              dayIsToday ? 'text-emerald-400' : 'text-gray-800'
             )}
           >
             {format(currentDate, 'd')}
@@ -124,7 +124,7 @@ export function CalendarDayView({ currentDate, events, onEventClick }: CalendarD
                 ? 'text-red-400'
                 : currentDate.getDay() === 6
                 ? 'text-blue-400'
-                : 'text-slate-300'
+                : 'text-gray-600'
             )}
           >
             {format(currentDate, 'EEEE', { locale: ja })}
@@ -133,8 +133,8 @@ export function CalendarDayView({ currentDate, events, onEventClick }: CalendarD
 
         {/* 時間未指定のイベント */}
         {itemsWithoutTime.length > 0 && (
-          <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700">
-            <div className="text-sm text-slate-400 mb-2">終日・時間未定</div>
+          <div className="p-3 rounded-lg bg-white border border-gray-200">
+            <div className="text-sm text-gray-500 mb-2">終日・時間未定</div>
             <div className="space-y-2">
               {itemsWithoutTime.map((item, index) =>
                 item.type === 'facility' ? (
@@ -168,10 +168,10 @@ export function CalendarDayView({ currentDate, events, onEventClick }: CalendarD
                 key={hour}
                 className="flex gap-3 min-h-[50px]"
               >
-                <div className="w-14 text-right text-sm text-slate-500 pt-1">
+                <div className="w-14 text-right text-sm text-gray-400 pt-1">
                   {hour.toString().padStart(2, '0')}:00
                 </div>
-                <div className="flex-1 border-l border-slate-700 pl-3 py-1">
+                <div className="flex-1 border-l border-gray-200 pl-3 py-1">
                   {hourItems.length > 0 ? (
                     <div className="space-y-1">
                       {hourItems.map((item, index) =>
@@ -199,7 +199,7 @@ export function CalendarDayView({ currentDate, events, onEventClick }: CalendarD
 
         {/* イベントがない場合 */}
         {allItems.length === 0 && (
-          <div className="text-center py-12 text-slate-500">
+          <div className="text-center py-12 text-gray-400">
             予定がありません
           </div>
         )}
@@ -207,7 +207,7 @@ export function CalendarDayView({ currentDate, events, onEventClick }: CalendarD
 
       {/* 施設イベント一覧ダイアログ */}
       <Dialog open={facilityDialogOpen} onOpenChange={setFacilityDialogOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
+        <DialogContent className="bg-white border-gray-200 text-gray-800 max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span>🏢</span>
@@ -239,13 +239,13 @@ export function CalendarDayView({ currentDate, events, onEventClick }: CalendarD
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span>{event.type === 'visit' ? '🏠' : '💊'}</span>
-                      <span className="text-white font-medium">{event.patientName}</span>
+                      <span className="text-gray-800 font-medium">{event.patientName}</span>
                     </div>
                     {event.reportDone && (
                       <span className="text-green-400 text-sm">✓</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-slate-400">
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
                     {event.time && <span>{event.time}</span>}
                     <Badge
                       variant="outline"
@@ -281,7 +281,7 @@ function FacilityRow({ group, onClick }: { group: GroupedFacilityEvents; onClick
       <span className="text-xl">🏢</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-white font-medium truncate">{group.facilityName}</span>
+          <span className="text-gray-800 font-medium truncate">{group.facilityName}</span>
           <Badge
             variant="outline"
             className="text-xs border-blue-500/50 text-blue-400 shrink-0"
@@ -292,7 +292,7 @@ function FacilityRow({ group, onClick }: { group: GroupedFacilityEvents; onClick
             <span className="text-green-400 text-sm shrink-0" title="全件報告書済">✓</span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-sm text-slate-400 mt-0.5">
+        <div className="flex items-center gap-3 text-sm text-gray-500 mt-0.5">
           {group.earliestTime && <span>{group.earliestTime}〜</span>}
           <span className="flex items-center gap-1">
             {hasVisit && <span className="text-emerald-400">訪問</span>}
@@ -325,7 +325,7 @@ function EventRow({ event, onClick }: { event: CalendarEvent; onClick: () => voi
       <span className="text-xl">{icon}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-white font-medium truncate">{displayName}</span>
+          <span className="text-gray-800 font-medium truncate">{displayName}</span>
           <Badge
             variant="outline"
             className={cn(
@@ -341,7 +341,7 @@ function EventRow({ event, onClick }: { event: CalendarEvent; onClick: () => voi
             <span className="text-green-400 text-sm shrink-0" title="報告書済">✓</span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-sm text-slate-400 mt-0.5">
+        <div className="flex items-center gap-3 text-sm text-gray-500 mt-0.5">
           {event.time && <span>{event.time}</span>}
           {event.assigneeName && <span>担当: {event.assigneeName}</span>}
           {event.status === 'draft' && (

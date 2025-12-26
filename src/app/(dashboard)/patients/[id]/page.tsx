@@ -114,7 +114,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
   if (!patient) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
     );
   }
@@ -125,20 +125,20 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/patients">
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+            <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-800">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-white">患者情報</h1>
-            <p className="text-slate-400">{patient.name}</p>
+            <h1 className="text-2xl font-bold text-gray-800">患者情報</h1>
+            <p className="text-gray-500">{patient.name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             onClick={() => window.open(`/api/pdf/patient-summary?patientId=${patient.id}`, '_blank')}
-            className="border-slate-600"
+            className="border-gray-200"
           >
             <FileDown className="h-4 w-4 mr-2" />
             PDF出力
@@ -172,14 +172,14 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
 
       {/* フォーム */}
       <form onSubmit={handleSubmit}>
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-white">基本情報</CardTitle>
+            <CardTitle className="text-gray-800">基本情報</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-slate-300">
+                <Label htmlFor="name" className="text-gray-600">
                   患者名 <span className="text-red-400">*</span>
                 </Label>
                 <Input
@@ -187,28 +187,28 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
                   name="name"
                   required
                   defaultValue={patient.name}
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="nameKana" className="text-slate-300">
+                <Label htmlFor="nameKana" className="text-gray-600">
                   フリガナ
                 </Label>
                 <Input
                   id="nameKana"
                   name="nameKana"
                   defaultValue={patient.nameKana || ''}
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="facilityId" className="text-slate-300">
+              <Label htmlFor="facilityId" className="text-gray-600">
                 所属施設
               </Label>
               <Select name="facilityId" defaultValue={patient.facilityId || 'none'}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                   <SelectValue placeholder="個人宅（施設なし）" />
                 </SelectTrigger>
                 <SelectContent>
@@ -224,7 +224,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-slate-300">
+                <Label htmlFor="phone" className="text-gray-600">
                   電話番号
                 </Label>
                 <Input
@@ -232,36 +232,36 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
                   name="phone"
                   type="tel"
                   defaultValue={patient.phone || ''}
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="area" className="text-slate-300">
+                <Label htmlFor="area" className="text-gray-600">
                   エリア
                 </Label>
                 <Input
                   id="area"
                   name="area"
                   defaultValue={patient.area || ''}
-                  className="bg-slate-700/50 border-slate-600 text-white"
+                  className="bg-gray-50 border-gray-200 text-gray-800"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-slate-300">
+              <Label htmlFor="address" className="text-gray-600">
                 住所
               </Label>
               <Input
                 id="address"
                 name="address"
                 defaultValue={patient.address || ''}
-                className="bg-slate-700/50 border-slate-600 text-white"
+                className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-slate-300">
+              <Label htmlFor="notes" className="text-gray-600">
                 備考
               </Label>
               <Textarea
@@ -269,21 +269,21 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
                 name="notes"
                 defaultValue={patient.memo || ''}
                 rows={4}
-                className="bg-slate-700/50 border-slate-600 text-white resize-none"
+                className="bg-gray-50 border-gray-200 text-gray-800 resize-none"
               />
             </div>
 
             {canEdit && (
               <div className="flex justify-end gap-4 pt-4">
                 <Link href="/patients">
-                  <Button type="button" variant="outline" className="border-slate-600">
+                  <Button type="button" variant="outline" className="border-gray-200">
                     キャンセル
                   </Button>
                 </Link>
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+                  className="bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-cyan-600"
                 >
                   {loading ? (
                     <>

@@ -90,24 +90,24 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+        <Button variant="outline" size="sm" className="border-gray-200 text-gray-600 hover:bg-gray-100">
           <FileDown className="h-4 w-4 mr-2" />
           PDF出力
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white">
+      <DialogContent className="bg-white border-gray-200 text-gray-800">
         <DialogHeader>
           <DialogTitle>予定表PDF出力</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           {/* 出力単位 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">出力単位</Label>
+            <Label className="text-gray-600">出力単位</Label>
             <Select
               value={exportType}
               onValueChange={(v) => setExportType(v as 'daily' | 'weekly')}
             >
-              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -119,17 +119,17 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
 
           {/* 日付選択 */}
           <div className="space-y-2">
-            <Label className="text-slate-300">
+            <Label className="text-gray-600">
               {exportType === 'daily' ? '対象日' : '対象週（この日を含む週）'}
             </Label>
             <Input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-slate-700/50 border-slate-600"
+              className="bg-gray-50 border-gray-200"
             />
             {exportType === 'weekly' && selectedDate && (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-gray-400">
                 {format(startOfWeek(new Date(selectedDate), { weekStartsOn: 1 }), 'M月d日(E)', { locale: ja })}
                 〜
                 {format(addDays(startOfWeek(new Date(selectedDate), { weekStartsOn: 1 }), 6), 'M月d日(E)', { locale: ja })}
@@ -139,12 +139,12 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
 
           {/* 種別フィルタ */}
           <div className="space-y-2">
-            <Label className="text-slate-300">種別</Label>
+            <Label className="text-gray-600">種別</Label>
             <Select
               value={typeFilter}
               onValueChange={(v) => setTypeFilter(v as typeof typeFilter)}
             >
-              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -157,12 +157,12 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
 
           {/* ステータスフィルタ */}
           <div className="space-y-2">
-            <Label className="text-slate-300">ステータス</Label>
+            <Label className="text-gray-600">ステータス</Label>
             <Select
               value={statusFilter}
               onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
             >
-              <SelectTrigger className="bg-slate-700/50 border-slate-600">
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -180,7 +180,7 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
               checked={includeCompleted}
               onCheckedChange={(checked) => setIncludeCompleted(checked as boolean)}
             />
-            <Label htmlFor="includeCompleted" className="text-slate-300">
+            <Label htmlFor="includeCompleted" className="text-gray-600">
               完了済みを含める
             </Label>
           </div>
@@ -189,7 +189,7 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
           <Button
             onClick={handleExport}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            className="w-full bg-gradient-to-r from-emerald-500 to-orange-500 hover:from-emerald-600 hover:to-cyan-600"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
