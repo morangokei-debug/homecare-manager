@@ -50,7 +50,7 @@ export default function CalendarPage() {
   const { data: session } = useSession();
   const canEdit = session?.user?.role !== 'viewer';
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('month');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
