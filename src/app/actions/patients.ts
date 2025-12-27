@@ -2,9 +2,18 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { auth } from '@/lib/auth';
 
 export async function createPatient(formData: FormData) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'ログインが必要です' };
+    }
+    if (session.user.role === 'viewer') {
+      return { success: false, error: '編集権限がありません' };
+    }
+
     const name = formData.get('name') as string;
     const nameKana = formData.get('nameKana') as string | null;
     const phone = formData.get('phone') as string | null;
@@ -35,6 +44,14 @@ export async function createPatient(formData: FormData) {
 
 export async function updatePatient(formData: FormData) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'ログインが必要です' };
+    }
+    if (session.user.role === 'viewer') {
+      return { success: false, error: '編集権限がありません' };
+    }
+
     const id = formData.get('id') as string;
     const name = formData.get('name') as string;
     const nameKana = formData.get('nameKana') as string | null;
@@ -67,6 +84,14 @@ export async function updatePatient(formData: FormData) {
 
 export async function deletePatient(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'ログインが必要です' };
+    }
+    if (session.user.role === 'viewer') {
+      return { success: false, error: '削除権限がありません' };
+    }
+
     // 論理削除
     await prisma.patient.update({
       where: { id },

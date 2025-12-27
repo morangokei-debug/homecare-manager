@@ -18,6 +18,14 @@ export async function PUT(
   try {
     const { newPassword } = await request.json();
 
+    // パスワードの最小長チェック
+    if (!newPassword || newPassword.length < 8) {
+      return NextResponse.json(
+        { message: 'パスワードは8文字以上で設定してください' },
+        { status: 400 }
+      );
+    }
+
     // 対象ユーザーを確認
     const user = await prisma.user.findUnique({
       where: { id },

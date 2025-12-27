@@ -13,6 +13,22 @@ export async function POST(request: Request) {
   try {
     const { name, email, password, role } = await request.json();
 
+    // 入力バリデーション
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { message: '名前、メールアドレス、パスワードは必須です' },
+        { status: 400 }
+      );
+    }
+
+    // パスワードの最小長チェック
+    if (password.length < 8) {
+      return NextResponse.json(
+        { message: 'パスワードは8文字以上で設定してください' },
+        { status: 400 }
+      );
+    }
+
     // 既存ユーザーのチェック
     const existing = await prisma.user.findUnique({
       where: { email },
@@ -33,7 +49,7 @@ export async function POST(request: Request) {
       data: {
         name,
         email,
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         role: role || 'staff',
       },
     });

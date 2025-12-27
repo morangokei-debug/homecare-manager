@@ -64,6 +64,11 @@ export async function createEvent(formData: FormData) {
 
 export async function updateEvent(formData: FormData) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'ログインが必要です' };
+    }
+
     const id = formData.get('id') as string;
     const type = formData.get('type') as string;
     const date = formData.get('date') as string;
@@ -119,6 +124,11 @@ export async function updateEvent(formData: FormData) {
 
 export async function deleteEvent(id: string) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'ログインが必要です' };
+    }
+
     await prisma.event.delete({
       where: { id },
     });
@@ -135,6 +145,11 @@ export async function deleteEvent(id: string) {
 // 一括確定
 export async function confirmEvents(eventIds: string[]) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'ログインが必要です' };
+    }
+
     await prisma.event.updateMany({
       where: { id: { in: eventIds } },
       data: { status: 'confirmed' },
