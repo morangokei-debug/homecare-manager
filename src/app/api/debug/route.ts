@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { getToken } from 'next-auth/jwt';
+import type { NextRequest } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // セッショントークンの確認
+  const token = await getToken({ 
+    req: request, 
+    secret: process.env.NEXTAUTH_SECRET 
+  });
+  
+  console.log('JWT Token:', token);
   try {
     // 1. データベース接続テスト
     const userCount = await prisma.user.count();
@@ -32,6 +41,7 @@ export async function GET() {
 
     return NextResponse.json({
       status: 'ok',
+      sessionToken: token ? { id: token.id, email: token.email, role: token.role } : null,
       userCount,
       user: {
         id: user.id,
