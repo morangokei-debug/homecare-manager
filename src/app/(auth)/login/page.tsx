@@ -27,13 +27,19 @@ export default function LoginPage() {
         redirect: false,
       });
 
+      console.log('signIn result:', result);
+
       if (result?.error) {
-        setError('メールアドレスまたはパスワードが正しくありません');
-      } else {
+        console.log('Login error:', result.error);
+        setError(`エラー: ${result.error}`);
+      } else if (result?.ok) {
         router.push('/calendar');
         router.refresh();
+      } else {
+        setError('不明なエラーが発生しました');
       }
-    } catch {
+    } catch (err) {
+      console.error('Login exception:', err);
       setError('ログインに失敗しました');
     } finally {
       setLoading(false);
