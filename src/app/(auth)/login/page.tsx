@@ -33,8 +33,8 @@ export default function LoginPage() {
         console.log('Login error:', result.error);
         setError(`エラー: ${result.error}`);
       } else if (result?.ok) {
-        router.push('/calendar');
-        router.refresh();
+        // ハードリダイレクトでページを完全にリロード
+        window.location.href = '/calendar';
       } else {
         setError('不明なエラーが発生しました');
       }
