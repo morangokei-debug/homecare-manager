@@ -140,7 +140,7 @@ export async function GET(request: Request) {
         }
         
         // 報告書記載状況
-        const reportMark = event.isReportWritten ? ' [Done]' : '';
+        const reportMark = event.reportDone ? ' [Done]' : '';
 
         // イベント行
         const line = `${timeStr}  ${typeIcon} ${locationIcon} ${targetName}${reportMark}`;
