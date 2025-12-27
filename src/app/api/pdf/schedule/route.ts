@@ -28,13 +28,7 @@ export async function GET(request: Request) {
     whereCondition.type = typeFilter;
   }
 
-  if (statusFilter !== 'all') {
-    whereCondition.status = statusFilter;
-  }
-
-  if (!includeCompleted) {
-    whereCondition.isCompleted = false;
-  }
+  // statusとisCompletedフィールドは削除されたため、フィルタリングは行わない
 
   const events = await prisma.event.findMany({
     where: whereCondition,
@@ -42,6 +36,7 @@ export async function GET(request: Request) {
       patient: {
         include: { facility: true },
       },
+      facility: true,
       assignee: {
         select: { name: true },
       },
@@ -125,20 +120,30 @@ export async function GET(request: Request) {
         
         // 施設か個人宅かを判定
         let targetName: string;
-        if (event.patient.facility && event.patient.facility.displayMode === 'grouped') {
-          targetName = event.patient.facility.name;
-        } else {
-          targetName = event.patient.name;
-        }
-
-        const locationIcon = event.patient.facility ? '[F]' : '[H]';
+        let locationIcon: string;
         
-        // ステータス表示
-        const statusMark = event.status === 'draft' ? ' *' : '';
-        const completedMark = event.isCompleted ? ' [Done]' : '';
+        if (event.patient) {
+          // 患者に紐づくイベント
+          if (event.patient.facility && event.patient.facility.displayMode === 'grouped') {
+            targetName = event.patient.facility.name;
+          } else {
+            targetName = event.patient.name;
+          }
+          locationIcon = event.patient.facility ? '[F]' : '[H]';
+        } else if (event.facility) {
+          // 施設全体イベント
+          targetName = event.facility.name;
+          locationIcon = '[F]';
+        } else {
+          targetName = 'Unknown';
+          locationIcon = '[?]';
+        }
+        
+        // 報告書記載状況
+        const reportMark = event.isReportWritten ? ' [Done]' : '';
 
         // イベント行
-        const line = `${timeStr}  ${typeIcon} ${locationIcon} ${targetName}${statusMark}${completedMark}`;
+        const line = `${timeStr}  ${typeIcon} ${locationIcon} ${targetName}${reportMark}`;
         doc.text(line, margin + 4, y);
         y += 5;
 
