@@ -22,12 +22,12 @@ export async function GET() {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
         },
-        isCompleted: false,
       },
       include: {
         patient: {
           include: { facility: true },
         },
+        facility: true,
       },
       orderBy: { date: 'asc' },
     });
@@ -55,25 +55,31 @@ export async function GET() {
 
     // 既存のリマインドがない場合は、イベントからリマインドを生成
     if (reminders.length === 0 && events.length > 0) {
-      const generatedReminders = events.map((event) => ({
-        id: `generated-${event.id}`,
-        eventId: event.id,
-        scheduledAt: event.date.toISOString(),
-        message: event.type === 'visit'
-          ? `明日 ${event.patient.name} さんの訪問予定があります`
-          : `明日 ${event.patient.name} さんの処方予定があります`,
-        isRead: false,
-        event: {
-          id: event.id,
-          type: event.type,
-          date: event.date.toISOString().split('T')[0],
-          time: event.time ? event.time.toISOString().split('T')[1].slice(0, 5) : null,
-          patient: {
-            name: event.patient.name,
-            facility: event.patient.facility,
+      const generatedReminders = events.map((event) => {
+        // 名前を決定（患者または施設）
+        const targetName = event.patient?.name || event.facility?.name || '不明';
+        
+        return {
+          id: `generated-${event.id}`,
+          eventId: event.id,
+          scheduledAt: event.date.toISOString(),
+          message: event.type === 'visit'
+            ? `明日 ${targetName} さんの訪問予定があります`
+            : `明日 ${targetName} さんの処方予定があります`,
+          isRead: false,
+          event: {
+            id: event.id,
+            type: event.type,
+            date: event.date.toISOString().split('T')[0],
+            time: event.time ? event.time.toISOString().split('T')[1].slice(0, 5) : null,
+            patient: event.patient ? {
+              name: event.patient.name,
+              facility: event.patient.facility,
+            } : null,
+            facility: event.facility,
           },
-        },
-      }));
+        };
+      });
       return NextResponse.json(generatedReminders);
     }
 
@@ -88,10 +94,10 @@ export async function GET() {
         type: r.event.type,
         date: r.event.date.toISOString().split('T')[0],
         time: r.event.time ? r.event.time.toISOString().split('T')[1].slice(0, 5) : null,
-        patient: {
+        patient: r.event.patient ? {
           name: r.event.patient.name,
           facility: r.event.patient.facility,
-        },
+        } : null,
       },
     }));
 
