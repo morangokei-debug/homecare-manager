@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 認証不要なパス
-  const publicPaths = ['/login', '/api/auth'];
+  const publicPaths = ['/login', '/api/auth', '/api/debug'];
   
   // ICSエンドポイントはトークン認証なので除外
   const icsPath = pathname.startsWith('/api/calendar/') && pathname.endsWith('.ics');
