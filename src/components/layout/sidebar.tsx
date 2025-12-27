@@ -1,7 +1,8 @@
 'use client';
 
+import { useTransition } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import {
@@ -12,6 +13,7 @@ import {
   List,
   Bell,
   Shield,
+  Loader2,
 } from 'lucide-react';
 
 const navigation = [
@@ -29,9 +31,52 @@ const adminNavigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
+  const [isPending, startTransition] = useTransition();
   
   const isSuperAdmin = session?.user?.role === 'super_admin';
+
+  const handleNavigation = (href: string) => {
+    startTransition(() => {
+      router.push(href);
+    });
+  };
+
+  const NavItem = ({ item, isAdmin = false }: { item: typeof navigation[0], isAdmin?: boolean }) => {
+    const isActive = pathname.startsWith(item.href);
+    const isNavigating = isPending && !isActive;
+    
+    return (
+      <button
+        onClick={() => handleNavigation(item.href)}
+        className={cn(
+          'w-full group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all text-left',
+          isActive
+            ? isAdmin 
+              ? 'bg-orange-50 text-orange-600 border border-orange-200'
+              : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+        )}
+      >
+        {isNavigating ? (
+          <Loader2 className="h-5 w-5 flex-shrink-0 animate-spin text-emerald-500" />
+        ) : (
+          <item.icon
+            className={cn(
+              'h-5 w-5 flex-shrink-0',
+              isActive 
+                ? isAdmin ? 'text-orange-500' : 'text-emerald-500'
+                : isAdmin 
+                  ? 'text-gray-400 group-hover:text-orange-500'
+                  : 'text-gray-400 group-hover:text-emerald-500'
+            )}
+          />
+        )}
+        {item.name}
+      </button>
+    );
+  };
 
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
@@ -56,81 +101,24 @@ export function Sidebar() {
                 システム管理
               </p>
               <nav className="mt-2 space-y-1">
-                {adminNavigation.map((item) => {
-                  const isActive = pathname.startsWith(item.href);
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={cn(
-                        'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
-                        isActive
-                          ? 'bg-orange-50 text-orange-600 border border-orange-200'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      )}
-                    >
-                      <item.icon
-                        className={cn(
-                          'h-5 w-5 flex-shrink-0',
-                          isActive ? 'text-orange-500' : 'text-gray-400 group-hover:text-orange-500'
-                        )}
-                      />
-                      {item.name}
-                    </Link>
-                  );
-                })}
+                {adminNavigation.map((item) => (
+                  <NavItem key={item.name} item={item} isAdmin />
+                ))}
               </nav>
             </div>
           )}
           
           {/* 通常メニュー */}
           <nav className={cn("flex-1 space-y-1 px-3", isSuperAdmin ? "mt-6" : "mt-8")}>
-            {!isSuperAdmin && navigation.map((item) => {
-              const isActive = pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
-                    isActive
-                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  )}
-                >
-                  <item.icon
-                    className={cn(
-                      'h-5 w-5 flex-shrink-0',
-                      isActive ? 'text-emerald-500' : 'text-gray-400 group-hover:text-emerald-500'
-                    )}
-                  />
-                  {item.name}
-                </Link>
-              );
-            })}
-            
-            {/* 会社に所属しているユーザー用のメニュー */}
-            {!isSuperAdmin && session?.user?.organizationId && navigation.map((item) => null)}
+            {!isSuperAdmin && navigation.map((item) => (
+              <NavItem key={item.name} item={item} />
+            ))}
             
             {/* super_adminの場合は設定のみ表示 */}
             {isSuperAdmin && (
-              <Link
-                href="/settings"
-                className={cn(
-                  'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
-                  pathname.startsWith('/settings')
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                )}
-              >
-                <Settings
-                  className={cn(
-                    'h-5 w-5 flex-shrink-0',
-                    pathname.startsWith('/settings') ? 'text-emerald-500' : 'text-gray-400 group-hover:text-emerald-500'
-                  )}
-                />
-                設定
-              </Link>
+              <NavItem 
+                item={{ name: '設定', href: '/settings', icon: Settings }} 
+              />
             )}
           </nav>
         </div>
