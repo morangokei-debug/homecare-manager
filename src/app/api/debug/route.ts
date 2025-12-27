@@ -5,13 +5,24 @@ import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  // Cookie名を特定（本番環境では __Secure- プレフィックス）
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieName = isProduction 
+    ? '__Secure-authjs.session-token' 
+    : 'authjs.session-token';
+  
   // セッショントークンの確認
   const token = await getToken({ 
     req: request, 
-    secret: process.env.NEXTAUTH_SECRET 
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
+    cookieName,
   });
   
+  // 全てのcookieを取得して確認
+  const allCookies = request.cookies.getAll().map(c => c.name);
+  
   console.log('JWT Token:', token);
+  console.log('Cookies:', allCookies);
   try {
     // 1. データベース接続テスト
     const userCount = await prisma.user.count();
@@ -42,6 +53,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       status: 'ok',
       sessionToken: token ? { id: token.id, email: token.email, role: token.role } : null,
+      cookies: {
+        all: allCookies,
+        expectedCookieName: cookieName,
+        isProduction,
+      },
       userCount,
       user: {
         id: user.id,
@@ -54,7 +70,9 @@ export async function GET(request: NextRequest) {
       env: {
         hasDbUrl: !!process.env.DATABASE_URL,
         hasSecret: !!process.env.NEXTAUTH_SECRET,
+        hasAuthSecret: !!process.env.AUTH_SECRET,
         nextauthUrl: process.env.NEXTAUTH_URL,
+        nodeEnv: process.env.NODE_ENV,
       }
     });
   } catch (error) {

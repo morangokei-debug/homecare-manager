@@ -8,3 +8,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Storage bucket name for patient documents
 export const DOCUMENTS_BUCKET = 'patient-documents';
 
+

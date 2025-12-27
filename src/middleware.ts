@@ -19,9 +19,13 @@ export async function middleware(request: NextRequest) {
   }
 
   // JWTトークンをチェック（軽量）
+  // NextAuth v5 では cookie名が 'authjs.session-token' になる
   const token = await getToken({ 
     req: request,
-    secret: process.env.NEXTAUTH_SECRET 
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
+    cookieName: process.env.NODE_ENV === 'production' 
+      ? '__Secure-authjs.session-token' 
+      : 'authjs.session-token',
   });
 
   // ログインしていない場合
