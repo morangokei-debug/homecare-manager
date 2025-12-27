@@ -1,16 +1,26 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getCurrentOrganization } from '@/lib/organization';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
-  const session = await auth();
+  const org = await getCurrentOrganization();
 
-  if (!session || session.user?.role !== 'admin') {
+  if (!org) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // admin または super_admin のみアクセス可能
+  if (org.role !== 'admin' && !org.isSuperAdmin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // super_admin は全ユーザー、admin は自組織のユーザーのみ
+  const whereClause = org.isSuperAdmin
+    ? { isActive: true }
+    : { isActive: true, organizationId: org.organizationId };
+
   const users = await prisma.user.findMany({
-    where: { isActive: true },
+    where: whereClause,
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -22,4 +32,3 @@ export async function GET() {
 
   return NextResponse.json(users);
 }
-

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Building2, Plus, Users, UserCheck, Home, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Building2, Plus, Users, UserCheck, Home, Pencil, Trash2, X, Check, Mail, Eye, Copy, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,11 @@ interface Organization {
   address: string | null;
   isActive: boolean;
   createdAt: string;
+  users?: {
+    id: string;
+    email: string;
+    name: string;
+  }[];
   _count: {
     users: number;
     patients: number;
@@ -42,9 +47,19 @@ export default function OrganizationsPage() {
     code: '',
     phone: '',
     address: '',
+    adminEmail: '',
+    adminName: '',
+    adminPassword: '',
   });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [createdOrg, setCreatedOrg] = useState<{
+    name: string;
+    code: string;
+    adminEmail: string;
+    adminPassword: string;
+  } | null>(null);
 
   const fetchOrganizations = useCallback(async () => {
     try {
@@ -70,10 +85,28 @@ export default function OrganizationsPage() {
     }
   }, [status, session, router, fetchOrganizations]);
 
+  const generatePassword = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setFormData(prev => ({ ...prev, adminPassword: password }));
+  };
+
   const openCreateDialog = () => {
     setEditingOrg(null);
-    setFormData({ name: '', code: '', phone: '', address: '' });
+    setFormData({ 
+      name: '', 
+      code: '', 
+      phone: '', 
+      address: '',
+      adminEmail: '',
+      adminName: '',
+      adminPassword: '',
+    });
     setError('');
+    setCreatedOrg(null);
     setDialogOpen(true);
   };
 
@@ -84,8 +117,12 @@ export default function OrganizationsPage() {
       code: org.code,
       phone: org.phone || '',
       address: org.address || '',
+      adminEmail: '',
+      adminName: '',
+      adminPassword: '',
     });
     setError('');
+    setCreatedOrg(null);
     setDialogOpen(true);
   };
 
@@ -112,7 +149,18 @@ export default function OrganizationsPage() {
         return;
       }
 
-      setDialogOpen(false);
+      // 新規作成時は作成情報を表示
+      if (!editingOrg) {
+        setCreatedOrg({
+          name: formData.name,
+          code: formData.code,
+          adminEmail: formData.adminEmail,
+          adminPassword: formData.adminPassword,
+        });
+      } else {
+        setDialogOpen(false);
+      }
+      
       fetchOrganizations();
     } catch (err) {
       console.error('Failed to save organization:', err);
@@ -162,6 +210,18 @@ export default function OrganizationsPage() {
     }
   };
 
+  const copyToClipboard = async (text: string, id: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleSwitchToOrg = (orgId: string) => {
+    // 会社切り替え - セッションストレージに保存
+    sessionStorage.setItem('viewAsOrganization', orgId);
+    router.push('/admin/organizations/' + orgId);
+  };
+
   if (status === 'loading' || loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -191,7 +251,10 @@ export default function OrganizationsPage() {
           </div>
         </div>
         
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setCreatedOrg(null);
+        }}>
           <DialogTrigger asChild>
             <Button 
               onClick={openCreateDialog}
@@ -201,81 +264,224 @@ export default function OrganizationsPage() {
               新規会社登録
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>
-                {editingOrg ? '会社情報の編集' : '新規会社登録'}
+                {createdOrg ? '会社登録完了' : editingOrg ? '会社情報の編集' : '新規会社登録'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              {error && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-                  {error}
+            
+            {createdOrg ? (
+              // 作成完了画面
+              <div className="space-y-4 mt-4">
+                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-emerald-700 mb-3">
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="font-medium">会社と代表ユーザーを作成しました</span>
+                  </div>
+                  
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center p-2 bg-white rounded">
+                      <span className="text-stone-600">会社名</span>
+                      <span className="font-medium">{createdOrg.name}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-white rounded">
+                      <span className="text-stone-600">会社コード</span>
+                      <span className="font-mono">{createdOrg.code}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-white rounded">
+                      <span className="text-stone-600">ログインURL</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs truncate max-w-[200px]">
+                          {typeof window !== 'undefined' ? window.location.origin : ''}/login
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0"
+                          onClick={() => copyToClipboard(`${window.location.origin}/login`, 'url')}
+                        >
+                          {copiedId === 'url' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-white rounded">
+                      <span className="text-stone-600">メールアドレス</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono">{createdOrg.adminEmail}</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0"
+                          onClick={() => copyToClipboard(createdOrg.adminEmail, 'email')}
+                        >
+                          {copiedId === 'email' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-orange-50 rounded border border-orange-200">
+                      <span className="text-stone-600">パスワード</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-orange-700">{createdOrg.adminPassword}</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0"
+                          onClick={() => copyToClipboard(createdOrg.adminPassword, 'password')}
+                        >
+                          {copiedId === 'password' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-orange-600 mt-3">
+                    ⚠️ パスワードは安全に保管し、先方にお伝えください
+                  </p>
                 </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="name">会社名 *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="例: ○○薬局"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="code">会社コード *</Label>
-                <Input
-                  id="code"
-                  value={formData.code}
-                  onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toLowerCase() }))}
-                  placeholder="例: maru-pharmacy"
-                  required
-                />
-                <p className="text-xs text-stone-500">
-                  半角英数字とハイフンのみ。ユーザー識別に使用されます。
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">電話番号</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="例: 03-1234-5678"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">住所</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                  placeholder="例: 東京都千代田区..."
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4">
+                
                 <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setDialogOpen(false)}
+                  className="w-full"
+                  onClick={() => {
+                    setDialogOpen(false);
+                    setCreatedOrg(null);
+                  }}
                 >
-                  キャンセル
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {saving ? '保存中...' : '保存'}
+                  閉じる
                 </Button>
               </div>
-            </form>
+            ) : (
+              // 入力フォーム
+              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                {error && (
+                  <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                    {error}
+                  </div>
+                )}
+                
+                <div className="p-3 bg-stone-50 rounded-lg">
+                  <h3 className="font-medium text-stone-700 mb-3">会社情報</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="name">会社名 *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="例: ○○薬局"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="code">会社コード *</Label>
+                      <Input
+                        id="code"
+                        value={formData.code}
+                        onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
+                        placeholder="例: maru-pharmacy"
+                        required
+                        disabled={!!editingOrg}
+                      />
+                      <p className="text-xs text-stone-500">
+                        半角英数字とハイフンのみ
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="phone">電話番号</Label>
+                        <Input
+                          id="phone"
+                          value={formData.phone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="03-1234-5678"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="address">住所</Label>
+                        <Input
+                          id="address"
+                          value={formData.address}
+                          onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                          placeholder="東京都..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 新規作成時のみ代表ユーザー入力を表示 */}
+                {!editingOrg && (
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <h3 className="font-medium text-blue-700 mb-3">代表ユーザー（管理者）</h3>
+                    
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="adminEmail">メールアドレス *</Label>
+                        <Input
+                          id="adminEmail"
+                          type="email"
+                          value={formData.adminEmail}
+                          onChange={(e) => setFormData(prev => ({ ...prev, adminEmail: e.target.value }))}
+                          placeholder="admin@example.com"
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <Label htmlFor="adminName">氏名</Label>
+                        <Input
+                          id="adminName"
+                          value={formData.adminName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, adminName: e.target.value }))}
+                          placeholder="山田 太郎（空欄時は会社名+管理者）"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="adminPassword">パスワード *</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="adminPassword"
+                            value={formData.adminPassword}
+                            onChange={(e) => setFormData(prev => ({ ...prev, adminPassword: e.target.value }))}
+                            placeholder="6文字以上"
+                            required
+                            minLength={6}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={generatePassword}
+                          >
+                            自動生成
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDialogOpen(false)}
+                  >
+                    キャンセル
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    {saving ? '保存中...' : editingOrg ? '更新' : '登録'}
+                  </Button>
+                </div>
+              </form>
+            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -306,10 +512,18 @@ export default function OrganizationsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-lg text-stone-800">{org.name}</h3>
-                      <span className="text-xs px-2 py-0.5 bg-stone-100 text-stone-600 rounded">
+                      <span className="text-xs px-2 py-0.5 bg-stone-100 text-stone-600 rounded font-mono">
                         {org.code}
                       </span>
                     </div>
+                    
+                    {/* 代表ユーザー情報 */}
+                    {org.users && org.users.length > 0 && (
+                      <div className="flex items-center gap-2 mt-1 text-sm text-blue-600">
+                        <Mail className="h-3.5 w-3.5" />
+                        <span>{org.users[0].email}</span>
+                      </div>
+                    )}
                     
                     {(org.phone || org.address) && (
                       <p className="text-sm text-stone-500 mt-1">
@@ -336,6 +550,15 @@ export default function OrganizationsPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSwitchToOrg(org.id)}
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      詳細
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -393,4 +616,3 @@ export default function OrganizationsPage() {
     </div>
   );
 }
-

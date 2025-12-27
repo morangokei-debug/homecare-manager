@@ -1,13 +1,26 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getCurrentOrganization } from '@/lib/organization';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const org = await getCurrentOrganization();
 
-  if (!session || session.user?.role !== 'admin') {
+  if (!org) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // admin または super_admin のみユーザー作成可能
+  if (org.role !== 'admin' && !org.isSuperAdmin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // super_admin は組織に紐付けられないので、直接ユーザー作成は不可
+  if (org.isSuperAdmin) {
+    return NextResponse.json(
+      { message: 'システム管理者は会社管理画面からユーザーを追加してください' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -22,9 +35,9 @@ export async function POST(request: Request) {
     }
 
     // パスワードの最小長チェック
-    if (password.length < 8) {
+    if (password.length < 6) {
       return NextResponse.json(
-        { message: 'パスワードは8文字以上で設定してください' },
+        { message: 'パスワードは6文字以上で設定してください' },
         { status: 400 }
       );
     }
@@ -44,13 +57,14 @@ export async function POST(request: Request) {
     // パスワードをハッシュ化
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // ユーザー作成
+    // ユーザー作成（自組織に紐付け）
     const user = await prisma.user.create({
       data: {
         name,
         email,
         passwordHash: hashedPassword,
         role: role || 'staff',
+        organizationId: org.organizationId!,
       },
     });
 
@@ -68,4 +82,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
