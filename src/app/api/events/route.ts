@@ -1,10 +1,26 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentOrganization } from '@/lib/organization';
 
 export async function GET(request: Request) {
+  const org = await getCurrentOrganization();
+  if (!org) {
+    return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const start = searchParams.get('start');
   const end = searchParams.get('end');
+
+  // 組織フィルタ: super_adminは全て、それ以外は自組織のみ
+  const organizationFilter = org.isSuperAdmin
+    ? {}
+    : {
+        OR: [
+          { patient: { organizationId: org.organizationId } },
+          { facility: { organizationId: org.organizationId } },
+        ],
+      };
 
   const events = await prisma.event.findMany({
     where: {
@@ -12,6 +28,7 @@ export async function GET(request: Request) {
         gte: start ? new Date(start) : undefined,
         lte: end ? new Date(end) : undefined,
       },
+      ...organizationFilter,
     },
     include: {
       patient: {

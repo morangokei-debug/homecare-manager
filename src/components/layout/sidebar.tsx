@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import {
   CalendarDays,
@@ -10,6 +11,7 @@ import {
   Settings,
   List,
   Bell,
+  Shield,
 } from 'lucide-react';
 
 const navigation = [
@@ -21,8 +23,15 @@ const navigation = [
   { name: '設定', href: '/settings', icon: Settings },
 ];
 
+const adminNavigation = [
+  { name: '会社管理', href: '/admin/organizations', icon: Shield },
+];
+
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  
+  const isSuperAdmin = session?.user?.role === 'super_admin';
 
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
@@ -39,8 +48,44 @@ export function Sidebar() {
               </div>
             </div>
           </div>
-          <nav className="mt-8 flex-1 space-y-1 px-3">
-            {navigation.map((item) => {
+          
+          {/* システム管理者用メニュー */}
+          {isSuperAdmin && (
+            <div className="mt-6 px-3">
+              <p className="px-3 text-xs font-semibold text-orange-600 uppercase tracking-wider">
+                システム管理
+              </p>
+              <nav className="mt-2 space-y-1">
+                {adminNavigation.map((item) => {
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
+                        isActive
+                          ? 'bg-orange-50 text-orange-600 border border-orange-200'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      )}
+                    >
+                      <item.icon
+                        className={cn(
+                          'h-5 w-5 flex-shrink-0',
+                          isActive ? 'text-orange-500' : 'text-gray-400 group-hover:text-orange-500'
+                        )}
+                      />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          )}
+          
+          {/* 通常メニュー */}
+          <nav className={cn("flex-1 space-y-1 px-3", isSuperAdmin ? "mt-6" : "mt-8")}>
+            {!isSuperAdmin && navigation.map((item) => {
               const isActive = pathname.startsWith(item.href);
               return (
                 <Link
@@ -63,10 +108,33 @@ export function Sidebar() {
                 </Link>
               );
             })}
+            
+            {/* 会社に所属しているユーザー用のメニュー */}
+            {!isSuperAdmin && session?.user?.organizationId && navigation.map((item) => null)}
+            
+            {/* super_adminの場合は設定のみ表示 */}
+            {isSuperAdmin && (
+              <Link
+                href="/settings"
+                className={cn(
+                  'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
+                  pathname.startsWith('/settings')
+                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <Settings
+                  className={cn(
+                    'h-5 w-5 flex-shrink-0',
+                    pathname.startsWith('/settings') ? 'text-emerald-500' : 'text-gray-400 group-hover:text-emerald-500'
+                  )}
+                />
+                設定
+              </Link>
+            )}
           </nav>
         </div>
       </div>
     </div>
   );
 }
-

@@ -2,16 +2,18 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/lib/auth';
+import { requireOrganization } from '@/lib/organization';
 
 export async function createPatient(formData: FormData) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'ログインが必要です' };
-    }
-    if (session.user.role === 'viewer') {
+    const org = await requireOrganization();
+    if (org.role === 'viewer') {
       return { success: false, error: '編集権限がありません' };
+    }
+
+    // super_adminは会社を選択する必要がある
+    if (org.isSuperAdmin) {
+      return { success: false, error: 'システム管理者は直接患者を登録できません' };
     }
 
     const name = formData.get('name') as string;
@@ -31,6 +33,7 @@ export async function createPatient(formData: FormData) {
         area: area || null,
         memo: notes || null,
         facilityId: facilityId && facilityId !== 'none' ? facilityId : null,
+        organizationId: org.organizationId!,
       },
     });
 
@@ -44,11 +47,8 @@ export async function createPatient(formData: FormData) {
 
 export async function updatePatient(formData: FormData) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'ログインが必要です' };
-    }
-    if (session.user.role === 'viewer') {
+    const org = await requireOrganization();
+    if (org.role === 'viewer') {
       return { success: false, error: '編集権限がありません' };
     }
 
@@ -61,8 +61,13 @@ export async function updatePatient(formData: FormData) {
     const notes = formData.get('notes') as string | null;
     const facilityId = formData.get('facilityId') as string;
 
+    // 自分の組織のデータのみ更新可能（super_adminは全て可能）
+    const whereClause = org.isSuperAdmin 
+      ? { id }
+      : { id, organizationId: org.organizationId };
+
     await prisma.patient.update({
-      where: { id },
+      where: whereClause,
       data: {
         name,
         nameKana: nameKana || null,
@@ -84,17 +89,19 @@ export async function updatePatient(formData: FormData) {
 
 export async function deletePatient(id: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'ログインが必要です' };
-    }
-    if (session.user.role === 'viewer') {
+    const org = await requireOrganization();
+    if (org.role === 'viewer') {
       return { success: false, error: '削除権限がありません' };
     }
 
+    // 自分の組織のデータのみ削除可能（super_adminは全て可能）
+    const whereClause = org.isSuperAdmin 
+      ? { id }
+      : { id, organizationId: org.organizationId };
+
     // 論理削除
     await prisma.patient.update({
-      where: { id },
+      where: whereClause,
       data: { isActive: false },
     });
 

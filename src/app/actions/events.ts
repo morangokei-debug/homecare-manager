@@ -2,13 +2,15 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/lib/auth';
+import { requireOrganization } from '@/lib/organization';
 
 export async function createEvent(formData: FormData) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'ログインが必要です' };
+    const org = await requireOrganization();
+
+    // super_adminは直接イベント作成不可
+    if (org.isSuperAdmin) {
+      return { success: false, error: 'システム管理者は直接イベントを登録できません' };
     }
 
     const type = formData.get('type') as string;
@@ -28,6 +30,26 @@ export async function createEvent(formData: FormData) {
       return { success: false, error: '患者または施設を選択してください' };
     }
 
+    // 患者の組織チェック
+    if (patientId) {
+      const patient = await prisma.patient.findFirst({
+        where: { id: patientId, organizationId: org.organizationId },
+      });
+      if (!patient) {
+        return { success: false, error: '患者が見つかりません' };
+      }
+    }
+
+    // 施設の組織チェック
+    if (facilityId) {
+      const facility = await prisma.facility.findFirst({
+        where: { id: facilityId, organizationId: org.organizationId },
+      });
+      if (!facility) {
+        return { success: false, error: '施設が見つかりません' };
+      }
+    }
+
     // 時刻を適切な形式に変換（空の場合はnull）
     let timeValue = null;
     if (time) {
@@ -44,7 +66,7 @@ export async function createEvent(formData: FormData) {
         assignedTo: assigneeId && assigneeId !== 'none' ? assigneeId : null,
         memo: notes || null,
         status: 'confirmed',
-        createdBy: session.user.id,
+        createdBy: org.userId,
         isCompleted: false,
         isRecurring,
         recurringInterval: recurringInterval ? parseInt(recurringInterval) : null,
@@ -64,10 +86,7 @@ export async function createEvent(formData: FormData) {
 
 export async function updateEvent(formData: FormData) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'ログインが必要です' };
-    }
+    const org = await requireOrganization();
 
     const id = formData.get('id') as string;
     const type = formData.get('type') as string;
@@ -86,6 +105,21 @@ export async function updateEvent(formData: FormData) {
     // 患者か施設のどちらかが必須
     if (!patientId && !facilityId) {
       return { success: false, error: '患者または施設を選択してください' };
+    }
+
+    // イベントの組織チェック（患者または施設経由）
+    if (!org.isSuperAdmin) {
+      const event = await prisma.event.findFirst({
+        where: { id },
+        include: { patient: true, facility: true },
+      });
+      if (!event) {
+        return { success: false, error: 'イベントが見つかりません' };
+      }
+      const eventOrgId = event.patient?.organizationId || event.facility?.organizationId;
+      if (eventOrgId !== org.organizationId) {
+        return { success: false, error: 'このイベントを編集する権限がありません' };
+      }
     }
 
     // 時刻を適切な形式に変換（空の場合はnull）
@@ -124,9 +158,21 @@ export async function updateEvent(formData: FormData) {
 
 export async function deleteEvent(id: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'ログインが必要です' };
+    const org = await requireOrganization();
+
+    // イベントの組織チェック（患者または施設経由）
+    if (!org.isSuperAdmin) {
+      const event = await prisma.event.findFirst({
+        where: { id },
+        include: { patient: true, facility: true },
+      });
+      if (!event) {
+        return { success: false, error: 'イベントが見つかりません' };
+      }
+      const eventOrgId = event.patient?.organizationId || event.facility?.organizationId;
+      if (eventOrgId !== org.organizationId) {
+        return { success: false, error: 'このイベントを削除する権限がありません' };
+      }
     }
 
     await prisma.event.delete({
@@ -145,9 +191,22 @@ export async function deleteEvent(id: string) {
 // 一括確定
 export async function confirmEvents(eventIds: string[]) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'ログインが必要です' };
+    const org = await requireOrganization();
+
+    // super_adminは全て、それ以外は自組織のみ
+    if (!org.isSuperAdmin) {
+      // 組織チェック
+      const events = await prisma.event.findMany({
+        where: { id: { in: eventIds } },
+        include: { patient: true, facility: true },
+      });
+      
+      for (const event of events) {
+        const eventOrgId = event.patient?.organizationId || event.facility?.organizationId;
+        if (eventOrgId !== org.organizationId) {
+          return { success: false, error: '権限のないイベントが含まれています' };
+        }
+      }
     }
 
     await prisma.event.updateMany({
