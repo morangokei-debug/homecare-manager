@@ -100,7 +100,7 @@ export async function deletePatient(id: string) {
   try {
     const org = await requireOrganization();
     if (org.role === 'viewer') {
-      return { success: false, error: '削除権限がありません' };
+      return { success: false, error: '閲覧専用ユーザーは削除できません' };
     }
 
     // 患者を取得して所有権を確認
@@ -114,7 +114,7 @@ export async function deletePatient(id: string) {
 
     // super_admin以外は自分の組織のデータのみ削除可能
     if (!org.isSuperAdmin && patient.organizationId !== org.organizationId) {
-      return { success: false, error: 'この患者を削除する権限がありません' };
+      return { success: false, error: `この患者を削除する権限がありません（role: ${org.role}, orgMatch: ${patient.organizationId === org.organizationId}）` };
     }
 
     // 論理削除
