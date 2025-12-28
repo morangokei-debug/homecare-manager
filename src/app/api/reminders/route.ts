@@ -1,27 +1,44 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getCurrentOrganization } from '@/lib/organization';
 import { prisma } from '@/lib/prisma';
 import { addDays, startOfDay, endOfDay, subDays } from 'date-fns';
 
-export async function GET() {
-  const session = await auth();
+export async function GET(request: Request) {
+  const org = await getCurrentOrganization();
 
-  if (!session?.user?.id) {
+  if (!org) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // システム管理者はリマインダー機能なし
+  if (org.isSuperAdmin) {
+    return NextResponse.json([]);
+  }
+
+  const { searchParams } = new URL(request.url);
+  const unreadOnly = searchParams.get('unreadOnly') === 'true';
 
   try {
     // 今後7日間のイベントを取得してリマインドとして表示
     const startDate = subDays(new Date(), 1);
     const endDate = addDays(new Date(), 7);
 
+    // 組織フィルタ
+    const organizationFilter = {
+      OR: [
+        { patient: { organizationId: org.organizationId } },
+        { facility: { organizationId: org.organizationId } },
+      ],
+    };
+
     const events = await prisma.event.findMany({
       where: {
-        createdBy: session.user.id,
+        createdBy: org.userId,
         date: {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
         },
+        ...organizationFilter,
       },
       include: {
         patient: {
@@ -35,11 +52,12 @@ export async function GET() {
     // リマインドを作成（実際のリマインドテーブルがない場合の代替）
     const reminders = await prisma.reminder.findMany({
       where: {
-        userId: session.user.id,
+        userId: org.userId,
         scheduledAt: {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
         },
+        ...(unreadOnly ? { isRead: false } : {}),
       },
       include: {
         event: {
@@ -107,5 +125,3 @@ export async function GET() {
     return NextResponse.json([]);
   }
 }
-
-
