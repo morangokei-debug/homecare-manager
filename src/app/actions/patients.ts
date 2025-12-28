@@ -114,7 +114,7 @@ export async function deletePatient(id: string) {
 
     // super_admin以外は自分の組織のデータのみ削除可能
     if (!org.isSuperAdmin && patient.organizationId !== org.organizationId) {
-      return { success: false, error: `この患者を削除する権限がありません（role: ${org.role}, orgMatch: ${patient.organizationId === org.organizationId}）` };
+      return { success: false, error: 'この患者を削除する権限がありません' };
     }
 
     // 論理削除

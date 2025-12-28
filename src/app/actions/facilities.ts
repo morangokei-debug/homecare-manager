@@ -114,7 +114,7 @@ export async function deleteFacility(id: string) {
 
     // super_admin以外は自分の組織のデータのみ削除可能
     if (!org.isSuperAdmin && facility.organizationId !== org.organizationId) {
-      return { success: false, error: `この施設を削除する権限がありません（role: ${org.role}, orgMatch: ${facility.organizationId === org.organizationId}）` };
+      return { success: false, error: 'この施設を削除する権限がありません' };
     }
 
     // 論理削除
