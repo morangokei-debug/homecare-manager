@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,9 +27,12 @@ interface Facility {
 export default function EditFacilityPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [facility, setFacility] = useState<Facility | null>(null);
+
+  const canEdit = session?.user?.role === 'admin' || session?.user?.role === 'staff';
 
   useEffect(() => {
     fetch(`/api/facilities/${id}`)
@@ -89,21 +93,23 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
             <p className="text-gray-500">{facility.name}</p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-        >
-          {deleting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <Trash2 className="h-4 w-4 mr-2" />
-              削除
-            </>
-          )}
-        </Button>
+        {canEdit && (
+          <Button
+            variant="outline"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+          >
+            {deleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4 mr-2" />
+                削除
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
       {/* フォーム */}
@@ -207,30 +213,32 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
               />
             </div>
 
-            <div className="flex justify-end gap-4 pt-4">
-              <Link href="/facilities">
-                <Button type="button" variant="outline" className="border-gray-200">
-                  キャンセル
+            {canEdit && (
+              <div className="flex justify-end gap-4 pt-4">
+                <Link href="/facilities">
+                  <Button type="button" variant="outline" className="border-gray-200">
+                    キャンセル
+                  </Button>
+                </Link>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      保存中...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      保存する
+                    </>
+                  )}
                 </Button>
-              </Link>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    保存中...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    保存する
-                  </>
-                )}
-              </Button>
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </form>
