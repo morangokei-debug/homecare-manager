@@ -22,6 +22,7 @@ export async function GET(
     where: { id },
     include: {
       users: {
+        where: { isActive: true },
         select: {
           id: true,
           email: true,
@@ -32,8 +33,8 @@ export async function GET(
       },
       _count: {
         select: {
-          patients: true,
-          facilities: true,
+          patients: { where: { isActive: true } },
+          facilities: { where: { isActive: true } },
         },
       },
     },
@@ -125,4 +126,5 @@ export async function DELETE(
     return NextResponse.json({ error: '会社の削除に失敗しました' }, { status: 500 });
   }
 }
+
 
