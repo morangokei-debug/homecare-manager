@@ -73,7 +73,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-2xl">🏠</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-800">Homecare Manager</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-800">Homecare Note</CardTitle>
           <CardDescription className="text-gray-500">
             在宅訪問・処方管理システム
           </CardDescription>

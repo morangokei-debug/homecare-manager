@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Homecare Manager",
+  title: "Homecare Note",
   description: "在宅訪問薬剤師向け業務管理システム",
 };
 

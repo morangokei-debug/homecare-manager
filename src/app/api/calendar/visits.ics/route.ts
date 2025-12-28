@@ -116,7 +116,7 @@ export async function GET(request: Request) {
   const icsLines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Homecare Manager//Visit Calendar//JP',
+    'PRODID:-//Homecare Note//Visit Calendar//JP',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'X-WR-CALNAME:訪問予定',
@@ -175,7 +175,7 @@ export async function GET(request: Request) {
     const description = descriptionParts.join('\\n');
 
     // UID（永続的に一意）
-    const uid = `visit-${event.id}@homecare-manager`;
+    const uid = `visit-${event.id}@homecare-note`;
 
     // タイムスタンプ
     const dtstamp = format(new Date(), "yyyyMMdd'T'HHmmss'Z'");
@@ -232,5 +232,6 @@ export async function GET(request: Request) {
     },
   });
 }
+
 
 

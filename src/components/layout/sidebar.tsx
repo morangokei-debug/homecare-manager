@@ -88,8 +88,8 @@ export function Sidebar() {
                 <span className="text-lg">🏠</span>
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-800">Homecare</h1>
-                <p className="text-xs text-gray-500">Manager</p>
+                <h1 className="text-lg font-bold text-gray-800">Homecare Note</h1>
+                <p className="text-xs text-gray-500">在宅医療記録</p>
               </div>
             </div>
           </div>

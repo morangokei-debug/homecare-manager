@@ -9,3 +9,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const DOCUMENTS_BUCKET = 'patient-documents';
 
 
+
