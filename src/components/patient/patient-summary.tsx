@@ -70,7 +70,7 @@ export function PatientSummary({ patientId, patientName, summary }: Props) {
   const [errors, setErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const canEdit = session?.user?.role === 'admin' || session?.user?.role === 'staff';
+  const canEdit = session?.user?.role === 'super_admin' || session?.user?.role === 'admin' || session?.user?.role === 'staff';
 
   // 注意患者判定
   const cautionCount = summary

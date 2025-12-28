@@ -85,7 +85,7 @@ export function PatientDocuments({ patientId }: Props) {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const canEdit = session?.user?.role === 'admin' || session?.user?.role === 'staff';
+  const canEdit = session?.user?.role === 'super_admin' || session?.user?.role === 'admin' || session?.user?.role === 'staff';
 
   useEffect(() => {
     fetchDocuments();

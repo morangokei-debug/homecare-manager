@@ -69,7 +69,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [patient, setPatient] = useState<Patient | null>(null);
 
-  const canEdit = session?.user?.role === 'admin' || session?.user?.role === 'staff';
+  const canEdit = session?.user?.role === 'super_admin' || session?.user?.role === 'admin' || session?.user?.role === 'staff';
 
   useEffect(() => {
     Promise.all([

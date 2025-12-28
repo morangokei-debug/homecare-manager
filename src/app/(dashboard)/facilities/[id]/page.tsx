@@ -32,7 +32,7 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
   const [deleting, setDeleting] = useState(false);
   const [facility, setFacility] = useState<Facility | null>(null);
 
-  const canEdit = session?.user?.role === 'admin' || session?.user?.role === 'staff';
+  const canEdit = session?.user?.role === 'super_admin' || session?.user?.role === 'admin' || session?.user?.role === 'staff';
 
   useEffect(() => {
     fetch(`/api/facilities/${id}`)
