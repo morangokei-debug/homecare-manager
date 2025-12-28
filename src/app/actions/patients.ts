@@ -61,13 +61,22 @@ export async function updatePatient(formData: FormData) {
     const notes = formData.get('notes') as string | null;
     const facilityId = formData.get('facilityId') as string;
 
-    // 自分の組織のデータのみ更新可能（super_adminは全て可能）
-    const whereClause = org.isSuperAdmin 
-      ? { id }
-      : { id, organizationId: org.organizationId };
+    // 患者を取得して所有権を確認
+    const patient = await prisma.patient.findUnique({
+      where: { id },
+    });
+
+    if (!patient) {
+      return { success: false, error: '患者が見つかりません' };
+    }
+
+    // super_admin以外は自分の組織のデータのみ更新可能
+    if (!org.isSuperAdmin && patient.organizationId !== org.organizationId) {
+      return { success: false, error: 'この患者を更新する権限がありません' };
+    }
 
     await prisma.patient.update({
-      where: whereClause,
+      where: { id },
       data: {
         name,
         nameKana: nameKana || null,
@@ -94,14 +103,23 @@ export async function deletePatient(id: string) {
       return { success: false, error: '削除権限がありません' };
     }
 
-    // 自分の組織のデータのみ削除可能（super_adminは全て可能）
-    const whereClause = org.isSuperAdmin 
-      ? { id }
-      : { id, organizationId: org.organizationId };
+    // 患者を取得して所有権を確認
+    const patient = await prisma.patient.findUnique({
+      where: { id },
+    });
+
+    if (!patient) {
+      return { success: false, error: '患者が見つかりません' };
+    }
+
+    // super_admin以外は自分の組織のデータのみ削除可能
+    if (!org.isSuperAdmin && patient.organizationId !== org.organizationId) {
+      return { success: false, error: 'この患者を削除する権限がありません' };
+    }
 
     // 論理削除
     await prisma.patient.update({
-      where: whereClause,
+      where: { id },
       data: { isActive: false },
     });
 

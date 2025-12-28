@@ -61,13 +61,22 @@ export async function updateFacility(formData: FormData) {
     const displayMode = formData.get('displayMode') as string;
     const notes = formData.get('notes') as string | null;
 
-    // 自分の組織のデータのみ更新可能（super_adminは全て可能）
-    const whereClause = org.isSuperAdmin 
-      ? { id }
-      : { id, organizationId: org.organizationId };
+    // 施設を取得して所有権を確認
+    const facility = await prisma.facility.findUnique({
+      where: { id },
+    });
+
+    if (!facility) {
+      return { success: false, error: '施設が見つかりません' };
+    }
+
+    // super_admin以外は自分の組織のデータのみ更新可能
+    if (!org.isSuperAdmin && facility.organizationId !== org.organizationId) {
+      return { success: false, error: 'この施設を更新する権限がありません' };
+    }
 
     await prisma.facility.update({
-      where: whereClause,
+      where: { id },
       data: {
         name,
         phone: phone || null,
@@ -94,14 +103,23 @@ export async function deleteFacility(id: string) {
       return { success: false, error: '削除権限がありません' };
     }
 
-    // 自分の組織のデータのみ削除可能（super_adminは全て可能）
-    const whereClause = org.isSuperAdmin 
-      ? { id }
-      : { id, organizationId: org.organizationId };
+    // 施設を取得して所有権を確認
+    const facility = await prisma.facility.findUnique({
+      where: { id },
+    });
+
+    if (!facility) {
+      return { success: false, error: '施設が見つかりません' };
+    }
+
+    // super_admin以外は自分の組織のデータのみ削除可能
+    if (!org.isSuperAdmin && facility.organizationId !== org.organizationId) {
+      return { success: false, error: 'この施設を削除する権限がありません' };
+    }
 
     // 論理削除
     await prisma.facility.update({
-      where: whereClause,
+      where: { id },
       data: { isActive: false },
     });
 

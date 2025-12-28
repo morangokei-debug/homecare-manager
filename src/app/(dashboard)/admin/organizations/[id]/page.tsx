@@ -194,11 +194,16 @@ export default function OrganizationDetailPage({
         method: 'DELETE',
       });
 
+      const data = await res.json();
+
       if (res.ok) {
         fetchOrganization();
+      } else {
+        alert(data.error || 'ユーザーの削除に失敗しました');
       }
     } catch (err) {
       console.error('Failed to delete user:', err);
+      alert('ユーザーの削除に失敗しました');
     }
   };
 
