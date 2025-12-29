@@ -68,19 +68,6 @@ async function main() {
     },
   });
 
-  // 管理者のリマインド設定を作成
-  await prisma.reminderSetting.upsert({
-    where: { userId: admin.id },
-    update: {},
-    create: {
-      userId: admin.id,
-      visitEnabled: true,
-      visitTimings: ['day_before_18', 'same_day_9'],
-      rxEnabled: true,
-      rxTimings: ['day_before_18', 'same_day_9'],
-    },
-  });
-
   console.log('✅ 会社管理者ユーザーを作成しました');
   console.log('   メール: admin@homecare.local');
   console.log('   パスワード: admin123');
