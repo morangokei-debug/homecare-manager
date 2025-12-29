@@ -68,8 +68,10 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
   const [deleting, setDeleting] = useState(false);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [selectedFacility, setSelectedFacility] = useState<string>('none');
 
   const canEdit = session?.user?.role === 'super_admin' || session?.user?.role === 'admin' || session?.user?.role === 'staff';
+  const isFacilityPatient = selectedFacility !== 'none';
 
   useEffect(() => {
     Promise.all([
@@ -78,6 +80,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
     ]).then(([facilitiesData, patientData]) => {
       setFacilities(facilitiesData);
       setPatient(patientData);
+      setSelectedFacility(patientData.facilityId || 'none');
     });
   }, [id]);
 
@@ -207,7 +210,11 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
               <Label htmlFor="facilityId" className="text-gray-600">
                 所属施設
               </Label>
-              <Select name="facilityId" defaultValue={patient.facilityId || 'none'}>
+              <Select 
+                name="facilityId" 
+                value={selectedFacility}
+                onValueChange={setSelectedFacility}
+              >
                 <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                   <SelectValue placeholder="個人宅（施設なし）" />
                 </SelectTrigger>
@@ -222,43 +229,47 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
               </Select>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-gray-600">
-                  電話番号
-                </Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  defaultValue={patient.phone || ''}
-                  className="bg-gray-50 border-gray-200 text-gray-800"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="area" className="text-gray-600">
-                  エリア
-                </Label>
-                <Input
-                  id="area"
-                  name="area"
-                  defaultValue={patient.area || ''}
-                  className="bg-gray-50 border-gray-200 text-gray-800"
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-gray-600">
-                住所
+              <Label htmlFor="phone" className="text-gray-600">
+                電話番号
               </Label>
               <Input
-                id="address"
-                name="address"
-                defaultValue={patient.address || ''}
+                id="phone"
+                name="phone"
+                type="tel"
+                defaultValue={patient.phone || ''}
                 className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
+
+            {/* 個人宅の場合のみ住所・エリアを表示 */}
+            {!isFacilityPatient && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="area" className="text-gray-600">
+                    エリア
+                  </Label>
+                  <Input
+                    id="area"
+                    name="area"
+                    defaultValue={patient.area || ''}
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-gray-600">
+                    住所
+                  </Label>
+                  <Input
+                    id="address"
+                    name="address"
+                    defaultValue={patient.address || ''}
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-gray-600">

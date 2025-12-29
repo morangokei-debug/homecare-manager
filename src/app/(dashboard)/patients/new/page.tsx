@@ -21,6 +21,9 @@ export default function NewPatientPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [selectedFacility, setSelectedFacility] = useState<string>('none');
+
+  const isFacilityPatient = selectedFacility !== 'none';
 
   useEffect(() => {
     fetch('/api/facilities')
@@ -95,7 +98,11 @@ export default function NewPatientPage() {
               <Label htmlFor="facilityId" className="text-gray-600">
                 所属施設
               </Label>
-              <Select name="facilityId">
+              <Select 
+                name="facilityId" 
+                value={selectedFacility}
+                onValueChange={setSelectedFacility}
+              >
                 <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
                   <SelectValue placeholder="個人宅（施設なし）" />
                 </SelectTrigger>
@@ -113,43 +120,47 @@ export default function NewPatientPage() {
               </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-gray-600">
-                  電話番号
-                </Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="090-1234-5678"
-                  className="bg-gray-50 border-gray-200 text-gray-800"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="area" className="text-gray-600">
-                  エリア
-                </Label>
-                <Input
-                  id="area"
-                  name="area"
-                  placeholder="東京都新宿区"
-                  className="bg-gray-50 border-gray-200 text-gray-800"
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-gray-600">
-                住所
+              <Label htmlFor="phone" className="text-gray-600">
+                電話番号
               </Label>
               <Input
-                id="address"
-                name="address"
-                placeholder="東京都新宿区西新宿1-1-1"
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="090-1234-5678"
                 className="bg-gray-50 border-gray-200 text-gray-800"
               />
             </div>
+
+            {/* 個人宅の場合のみ住所・エリアを表示 */}
+            {!isFacilityPatient && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="area" className="text-gray-600">
+                    エリア
+                  </Label>
+                  <Input
+                    id="area"
+                    name="area"
+                    placeholder="東京都新宿区"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-gray-600">
+                    住所
+                  </Label>
+                  <Input
+                    id="address"
+                    name="address"
+                    placeholder="東京都新宿区西新宿1-1-1"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-gray-600">
