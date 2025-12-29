@@ -221,6 +221,7 @@ model Event {
 // ============================================
 
 enum ApproachType {
+  none          // 特にない
   normal        // 通常対応で問題なし
   careful       // 慎重な対応が必要
   contact_first // 事前連絡をしてから対応

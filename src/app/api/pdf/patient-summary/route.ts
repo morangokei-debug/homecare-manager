@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
 const APPROACH_LABELS: Record<string, string> = {
+  none: 'No special notes',
   normal: 'Normal care OK',
   careful: 'Careful approach required',
   contact_first: 'Contact before visit',

@@ -59,6 +59,7 @@ const CAUTION_LABELS = {
 };
 
 const APPROACH_LABELS: Record<ApproachType, string> = {
+  none: '特にない',
   normal: '通常対応で問題なし',
   careful: '慎重な対応が必要',
   contact_first: '事前連絡をしてから対応',
@@ -470,6 +471,10 @@ function EditDialog({
                 setFormData({ ...formData, approachType: value as ApproachType })
               }
             >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="none" id="none" />
+                <Label htmlFor="none">特にない</Label>
+              </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="normal" id="normal" />
                 <Label htmlFor="normal">通常対応で問題なし</Label>
