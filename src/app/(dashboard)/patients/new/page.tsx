@@ -174,6 +174,85 @@ export default function NewPatientPage() {
                 className="bg-gray-50 border-gray-200 text-gray-800 resize-none"
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* 関係者情報 */}
+        <Card className="bg-white border-gray-200 mt-6">
+          <CardHeader>
+            <CardTitle className="text-gray-800">関係者情報</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* ケアマネージャー */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">ケアマネージャー</h3>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="careManagerName" className="text-gray-600">
+                    氏名
+                  </Label>
+                  <Input
+                    id="careManagerName"
+                    name="careManagerName"
+                    placeholder="田中 一郎"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="careManagerPhone" className="text-gray-600">
+                    連絡先
+                  </Label>
+                  <Input
+                    id="careManagerPhone"
+                    name="careManagerPhone"
+                    type="tel"
+                    placeholder="03-1234-5678"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* キーパーソン */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">キーパーソン</h3>
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="keyPersonName" className="text-gray-600">
+                    氏名
+                  </Label>
+                  <Input
+                    id="keyPersonName"
+                    name="keyPersonName"
+                    placeholder="山田 花子"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="keyPersonRelation" className="text-gray-600">
+                    続柄
+                  </Label>
+                  <Input
+                    id="keyPersonRelation"
+                    name="keyPersonRelation"
+                    placeholder="長女"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="keyPersonPhone" className="text-gray-600">
+                    連絡先
+                  </Label>
+                  <Input
+                    id="keyPersonPhone"
+                    name="keyPersonPhone"
+                    type="tel"
+                    placeholder="090-1234-5678"
+                    className="bg-gray-50 border-gray-200 text-gray-800"
+                  />
+                </div>
+              </div>
+            </div>
 
             <div className="flex justify-end gap-4 pt-4">
               <Link href="/patients">

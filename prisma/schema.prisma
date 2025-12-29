@@ -153,6 +153,14 @@ model Patient {
   area           String?
   phone          String?
   memo           String?
+  // ケアマネージャー情報
+  careManagerName  String? @map("care_manager_name")
+  careManagerPhone String? @map("care_manager_phone")
+  // キーパーソン情報
+  keyPersonName     String? @map("key_person_name")
+  keyPersonRelation String? @map("key_person_relation")
+  keyPersonPhone    String? @map("key_person_phone")
+  
   isActive       Boolean   @default(true) @map("is_active")
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")

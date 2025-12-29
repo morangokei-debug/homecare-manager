@@ -23,6 +23,11 @@ export async function createPatient(formData: FormData) {
     const area = formData.get('area') as string | null;
     const notes = formData.get('notes') as string | null;
     const facilityId = formData.get('facilityId') as string;
+    const careManagerName = formData.get('careManagerName') as string | null;
+    const careManagerPhone = formData.get('careManagerPhone') as string | null;
+    const keyPersonName = formData.get('keyPersonName') as string | null;
+    const keyPersonRelation = formData.get('keyPersonRelation') as string | null;
+    const keyPersonPhone = formData.get('keyPersonPhone') as string | null;
 
     await prisma.patient.create({
       data: {
@@ -33,6 +38,11 @@ export async function createPatient(formData: FormData) {
         area: area || null,
         memo: notes || null,
         facilityId: facilityId && facilityId !== 'none' ? facilityId : null,
+        careManagerName: careManagerName || null,
+        careManagerPhone: careManagerPhone || null,
+        keyPersonName: keyPersonName || null,
+        keyPersonRelation: keyPersonRelation || null,
+        keyPersonPhone: keyPersonPhone || null,
         organizationId: org.organizationId!,
       },
     });
@@ -60,6 +70,11 @@ export async function updatePatient(formData: FormData) {
     const area = formData.get('area') as string | null;
     const notes = formData.get('notes') as string | null;
     const facilityId = formData.get('facilityId') as string;
+    const careManagerName = formData.get('careManagerName') as string | null;
+    const careManagerPhone = formData.get('careManagerPhone') as string | null;
+    const keyPersonName = formData.get('keyPersonName') as string | null;
+    const keyPersonRelation = formData.get('keyPersonRelation') as string | null;
+    const keyPersonPhone = formData.get('keyPersonPhone') as string | null;
 
     // 患者を取得して所有権を確認
     const patient = await prisma.patient.findUnique({
@@ -85,6 +100,11 @@ export async function updatePatient(formData: FormData) {
         area: area || null,
         memo: notes || null,
         facilityId: facilityId && facilityId !== 'none' ? facilityId : null,
+        careManagerName: careManagerName || null,
+        careManagerPhone: careManagerPhone || null,
+        keyPersonName: keyPersonName || null,
+        keyPersonRelation: keyPersonRelation || null,
+        keyPersonPhone: keyPersonPhone || null,
       },
     });
 
