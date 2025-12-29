@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { format } from 'date-fns';
+import { format, addDays, addWeeks } from 'date-fns';
+import { ja } from 'date-fns/locale';
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Trash2, Home, Building2, Copy, ExternalLink, Users } from 'lucide-react';
+import { Loader2, Save, Trash2, Home, Building2, Copy, ExternalLink, Users, CalendarPlus } from 'lucide-react';
 import { createEvent, updateEvent, deleteEvent } from '@/app/actions/events';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 import { useSession } from 'next-auth/react';
@@ -64,6 +65,13 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
   
   // 選択モード: 患者個人 or 施設全体
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('patient');
+  
+  // 複写機能
+  const [copyMode, setCopyMode] = useState(false);
+  const [copyType, setCopyType] = useState<'preset' | 'custom'>('preset');
+  const [copyPreset, setCopyPreset] = useState<string>('7'); // 7, 14, 21, 28日
+  const [copyWeeks, setCopyWeeks] = useState<string>('4'); // 週数
+  const [copyCustomDays, setCopyCustomDays] = useState<string>(''); // カスタム日数（カンマ区切り）
 
   const [formData, setFormData] = useState({
     type: 'visit' as 'visit' | 'prescription',
@@ -95,6 +103,12 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
   }, [open]);
 
   useEffect(() => {
+    // ダイアログが開くたびにコピーモードをリセット
+    setCopyMode(false);
+    setCopyType('preset');
+    setCopyWeeks('4');
+    setCopyCustomDays('');
+    
     if (event) {
       // 施設全体の場合
       const isFacilityEvent = event.facilityId && !event.patientId;
@@ -144,38 +158,84 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     }
   }, [patients, patientFilter]);
 
+  // 複写する日付リストを計算
+  const getCopyDates = (): Date[] => {
+    if (!copyMode || !formData.date) return [];
+    
+    const baseDate = new Date(formData.date);
+    const dates: Date[] = [];
+    
+    if (copyType === 'preset') {
+      // プリセット: 毎週同じ曜日に指定週数分
+      const weeks = parseInt(copyWeeks) || 4;
+      for (let i = 1; i <= weeks; i++) {
+        dates.push(addWeeks(baseDate, i));
+      }
+    } else {
+      // カスタム: カンマ区切りの日数
+      const days = copyCustomDays.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d) && d > 0);
+      days.forEach(day => {
+        dates.push(addDays(baseDate, day));
+      });
+    }
+    
+    return dates;
+  };
+
+  const copyDates = useMemo(() => getCopyDates(), [copyMode, copyType, copyPreset, copyWeeks, copyCustomDays, formData.date]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
-    const data = new FormData();
-    data.append('type', formData.type);
-    data.append('date', formData.date);
-    data.append('time', formData.time);
-    
-    // 選択モードに応じてpatientIdまたはfacilityIdを送信
-    if (selectionMode === 'facility') {
-      data.append('facilityId', formData.facilityId);
-      data.append('patientId', ''); // 空文字を送信
-    } else {
-      data.append('patientId', formData.patientId);
-      data.append('facilityId', '');
-    }
-    
-    data.append('assigneeId', formData.assigneeId);
-    data.append('notes', formData.notes);
-    data.append('isCompleted', String(formData.isCompleted));
-    data.append('isRecurring', String(formData.isRecurring));
-    data.append('recurringInterval', formData.recurringInterval);
-    data.append('reportDone', String(formData.reportDone));
-    data.append('planDone', String(formData.planDone));
+    const createEventData = (date: string) => {
+      const data = new FormData();
+      data.append('type', formData.type);
+      data.append('date', date);
+      data.append('time', formData.time);
+      
+      // 選択モードに応じてpatientIdまたはfacilityIdを送信
+      if (selectionMode === 'facility') {
+        data.append('facilityId', formData.facilityId);
+        data.append('patientId', ''); // 空文字を送信
+      } else {
+        data.append('patientId', formData.patientId);
+        data.append('facilityId', '');
+      }
+      
+      data.append('assigneeId', formData.assigneeId);
+      data.append('notes', formData.notes);
+      data.append('isCompleted', String(false));
+      data.append('isRecurring', String(formData.isRecurring));
+      data.append('recurringInterval', formData.recurringInterval);
+      data.append('reportDone', String(false));
+      data.append('planDone', String(false));
+      
+      return data;
+    };
 
     let result;
     if (event) {
+      // 既存イベントの更新
+      const data = createEventData(formData.date);
       data.append('id', event.id);
+      data.append('isCompleted', String(formData.isCompleted));
+      data.append('reportDone', String(formData.reportDone));
+      data.append('planDone', String(formData.planDone));
       result = await updateEvent(data);
     } else {
-      result = await createEvent(data);
+      // 新規作成（メインの日付）
+      result = await createEvent(createEventData(formData.date));
+      
+      // 複写モードの場合、追加の日付にも作成
+      if (result.success && copyMode && copyDates.length > 0) {
+        for (const copyDate of copyDates) {
+          const copyResult = await createEvent(createEventData(format(copyDate, 'yyyy-MM-dd')));
+          if (!copyResult.success) {
+            console.error('Failed to create copy:', copyResult.error);
+          }
+        }
+      }
     }
 
     if (result.success) {
@@ -219,6 +279,49 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
     });
   }
 
+  // 既存イベントをコピー
+  async function handleCopyEvent(days: number) {
+    if (!event) return;
+    
+    const newDate = addDays(new Date(event.date), days);
+    const confirmMessage = `${format(newDate, 'M月d日(E)', { locale: ja })}にコピーを作成しますか？`;
+    
+    if (!confirm(confirmMessage)) return;
+    
+    setLoading(true);
+    
+    const data = new FormData();
+    data.append('type', formData.type);
+    data.append('date', format(newDate, 'yyyy-MM-dd'));
+    data.append('time', formData.time);
+    
+    if (selectionMode === 'facility') {
+      data.append('facilityId', formData.facilityId);
+      data.append('patientId', '');
+    } else {
+      data.append('patientId', formData.patientId);
+      data.append('facilityId', '');
+    }
+    
+    data.append('assigneeId', formData.assigneeId);
+    data.append('notes', formData.notes);
+    data.append('isCompleted', 'false');
+    data.append('isRecurring', String(formData.isRecurring));
+    data.append('recurringInterval', formData.recurringInterval);
+    data.append('reportDone', 'false');
+    data.append('planDone', 'false');
+    
+    const result = await createEvent(data);
+    
+    if (result.success) {
+      alert(`${format(newDate, 'M月d日(E)', { locale: ja })}にコピーを作成しました`);
+      onClose();
+    } else {
+      alert(result.error || 'コピーに失敗しました');
+    }
+    setLoading(false);
+  }
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="bg-white border-gray-200 text-white max-w-lg max-h-[90vh] overflow-y-auto">
@@ -259,6 +362,107 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
               className="bg-gray-50 border-gray-200 text-gray-800"
             />
           </div>
+
+          {/* 複写機能（新規作成時のみ） */}
+          {!event && canEdit && (
+            <div className="space-y-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="copyMode"
+                  checked={copyMode}
+                  onCheckedChange={(checked) => setCopyMode(checked as boolean)}
+                />
+                <Label htmlFor="copyMode" className="text-gray-700 font-medium flex items-center gap-2">
+                  <CalendarPlus className="h-4 w-4 text-blue-500" />
+                  複数日に一括登録
+                </Label>
+              </div>
+              
+              {copyMode && (
+                <div className="space-y-3 pt-2">
+                  {/* 複写タイプ選択 */}
+                  <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setCopyType('preset')}
+                      className={`flex-1 px-3 py-1.5 text-xs font-medium transition-colors ${
+                        copyType === 'preset'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      週単位で複写
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCopyType('custom')}
+                      className={`flex-1 px-3 py-1.5 text-xs font-medium transition-colors border-l border-gray-200 ${
+                        copyType === 'custom'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      日数指定
+                    </button>
+                  </div>
+
+                  {copyType === 'preset' ? (
+                    <div className="space-y-2">
+                      <Label className="text-gray-600 text-sm">何週間分コピーしますか？</Label>
+                      <Select value={copyWeeks} onValueChange={setCopyWeeks}>
+                        <SelectTrigger className="bg-white border-gray-200 text-gray-800">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1週間（+7日）</SelectItem>
+                          <SelectItem value="2">2週間（+7, 14日）</SelectItem>
+                          <SelectItem value="3">3週間（+7, 14, 21日）</SelectItem>
+                          <SelectItem value="4">4週間（+7, 14, 21, 28日）</SelectItem>
+                          <SelectItem value="8">8週間分</SelectItem>
+                          <SelectItem value="12">12週間分</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label className="text-gray-600 text-sm">
+                        何日後にコピー？（カンマ区切り）
+                      </Label>
+                      <Input
+                        value={copyCustomDays}
+                        onChange={(e) => setCopyCustomDays(e.target.value)}
+                        placeholder="例: 7, 14, 28"
+                        className="bg-white border-gray-200 text-gray-800"
+                      />
+                      <p className="text-xs text-gray-400">
+                        例: &quot;7, 14, 28&quot; → 7日後、14日後、28日後にコピー
+                      </p>
+                    </div>
+                  )}
+
+                  {/* プレビュー */}
+                  {copyDates.length > 0 && (
+                    <div className="p-2 bg-white rounded border border-gray-200">
+                      <p className="text-xs text-gray-500 mb-1">作成される日付:</p>
+                      <div className="flex flex-wrap gap-1">
+                        <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded">
+                          {formData.date && format(new Date(formData.date), 'M/d(E)', { locale: ja })}
+                        </span>
+                        {copyDates.map((date, i) => (
+                          <span key={i} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+                            {format(date, 'M/d(E)', { locale: ja })}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        計 {copyDates.length + 1} 件登録されます
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 予定時刻（任意） */}
           <div className="space-y-2">
@@ -528,6 +732,57 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
               className="bg-gray-50 border-gray-200 text-gray-800 resize-none"
             />
           </div>
+
+          {/* 既存イベントからのコピー機能 */}
+          {event && canEdit && (
+            <div className="space-y-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <Label className="text-gray-700 font-medium flex items-center gap-2">
+                <Copy className="h-4 w-4 text-blue-500" />
+                この予定をコピー
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopyEvent(7)}
+                  className="border-blue-300 text-blue-600 hover:bg-blue-100"
+                >
+                  +7日後
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopyEvent(14)}
+                  className="border-blue-300 text-blue-600 hover:bg-blue-100"
+                >
+                  +14日後
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopyEvent(21)}
+                  className="border-blue-300 text-blue-600 hover:bg-blue-100"
+                >
+                  +21日後
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopyEvent(28)}
+                  className="border-blue-300 text-blue-600 hover:bg-blue-100"
+                >
+                  +28日後
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500">
+                クリックすると同じ内容で指定日数後にコピーを作成します
+              </p>
+            </div>
+          )}
 
           {/* 書類チェック */}
           {event && (
