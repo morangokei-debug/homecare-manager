@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Bell, LogOut, User, Building2, X, Eye } from 'lucide-react';
+import { LogOut, User, Building2, X, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 
 interface HeaderProps {
   user: {
@@ -27,7 +26,6 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const router = useRouter();
   const [viewingOrg, setViewingOrg] = useState<{ id: string; name: string } | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
   
   const initials = user.name
     ? user.name
@@ -46,21 +44,6 @@ export function Header({ user }: HeaderProps) {
     viewer: '閲覧者',
   }[user.role || 'viewer'];
 
-  // 未読リマインダー数を取得
-  const fetchUnreadCount = useCallback(async () => {
-    if (isSuperAdmin) return; // システム管理者はリマインダー機能なし
-    
-    try {
-      const res = await fetch('/api/reminders?unreadOnly=true');
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadCount(Array.isArray(data) ? data.length : 0);
-      }
-    } catch (err) {
-      console.error('Failed to fetch reminders:', err);
-    }
-  }, [isSuperAdmin]);
-
   // 閲覧中の会社を取得
   useEffect(() => {
     if (isSuperAdmin && typeof window !== 'undefined') {
@@ -71,13 +54,6 @@ export function Header({ user }: HeaderProps) {
       }
     }
   }, [isSuperAdmin]);
-
-  // 未読数を定期的に更新
-  useEffect(() => {
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 60000); // 1分ごと
-    return () => clearInterval(interval);
-  }, [fetchUnreadCount]);
 
   // 会社閲覧を終了
   const handleExitViewMode = () => {
@@ -114,23 +90,6 @@ export function Header({ user }: HeaderProps) {
         
         <div className="flex flex-1"></div>
         <div className="flex items-center gap-x-4 lg:gap-x-6">
-          {/* リマインド通知（super_admin以外） */}
-          {!isSuperAdmin && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative text-gray-500 hover:text-emerald-600"
-              onClick={() => router.push('/reminders')}
-            >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-orange-500 text-white text-xs">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </Badge>
-              )}
-            </Button>
-          )}
-
           {/* ユーザーメニュー */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

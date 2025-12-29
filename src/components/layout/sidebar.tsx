@@ -11,7 +11,6 @@ import {
   Building2,
   Settings,
   List,
-  Bell,
   Shield,
   Loader2,
 } from 'lucide-react';
@@ -21,7 +20,6 @@ const navigation = [
   { name: 'スケジュール一覧', href: '/events', icon: List },
   { name: '患者管理', href: '/patients', icon: Users },
   { name: '施設管理', href: '/facilities', icon: Building2 },
-  { name: 'リマインド', href: '/reminders', icon: Bell },
   { name: '設定', href: '/settings', icon: Settings },
 ];
 

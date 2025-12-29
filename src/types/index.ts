@@ -7,17 +7,6 @@ export type DisplayMode = 'grouped' | 'individual';
 export type EventType = 'visit' | 'prescription';
 export type EventStatus = 'draft' | 'confirmed';
 
-// リマインドタイミング
-export type VisitReminderTiming = 
-  | 'day_before_18'   // 前日18:00
-  | 'same_day_9'      // 当日9:00
-  | '1_hour_before'   // 1時間前
-  | '30_min_before';  // 30分前
-
-export type RxReminderTiming = 
-  | 'day_before_18'   // 前日18:00
-  | 'same_day_9';     // 当日9:00
-
 // ユーザー
 export interface User {
   id: string;
@@ -80,30 +69,6 @@ export interface Event {
   patient?: Patient;
   assignee?: User | null;
   creator?: User;
-}
-
-// リマインド設定
-export interface ReminderSetting {
-  id: string;
-  userId: string;
-  visitEnabled: boolean;
-  visitTimings: VisitReminderTiming[];
-  rxEnabled: boolean;
-  rxTimings: RxReminderTiming[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// リマインド
-export interface Reminder {
-  id: string;
-  userId: string;
-  eventId: string;
-  scheduledAt: Date;
-  isRead: boolean;
-  message: string;
-  createdAt: Date;
-  event?: Event;
 }
 
 // カレンダー表示用

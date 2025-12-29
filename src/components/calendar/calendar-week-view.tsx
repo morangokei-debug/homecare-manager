@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { AlertTriangle } from 'lucide-react';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 
 interface CalendarWeekViewProps {
@@ -314,6 +315,13 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
       {event.assigneeName && (
         <div className="text-xs text-gray-400 mt-1">
           担当: {event.assigneeName}
+        </div>
+      )}
+      {/* 訪問時注意事項 */}
+      {event.visitNotes && (
+        <div className="mt-2 p-1.5 rounded bg-amber-100 border border-amber-300 flex items-start gap-1">
+          <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-[10px] text-amber-800 line-clamp-2">{event.visitNotes}</p>
         </div>
       )}
     </div>

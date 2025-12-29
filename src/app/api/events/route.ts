@@ -63,6 +63,8 @@ export async function GET(request: Request) {
         ? 'grouped'
         : event.patient?.facility?.displayMode || 'individual',
       isFacilityEvent,
+      // 訪問時注意事項（患者のvisitNotes）
+      visitNotes: event.patient?.visitNotes || null,
       assigneeId: event.assignedTo,
       assigneeName: event.assignee?.name || null,
       notes: event.memo,

@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { AlertTriangle } from 'lucide-react';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 
 interface CalendarDayViewProps {
@@ -354,6 +355,13 @@ function EventRow({ event, onClick }: { event: CalendarEvent; onClick: () => voi
             </Badge>
           )}
         </div>
+        {/* 訪問時注意事項 */}
+        {event.visitNotes && (
+          <div className="mt-2 p-2 rounded bg-amber-100 border border-amber-300 flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 whitespace-pre-wrap">{event.visitNotes}</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Trash2, Home, Building2, Copy, ExternalLink, Users, CalendarPlus } from 'lucide-react';
+import { Loader2, Save, Trash2, Home, Building2, Copy, ExternalLink, Users, CalendarPlus, AlertTriangle } from 'lucide-react';
 import { createEvent, updateEvent, deleteEvent } from '@/app/actions/events';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 import { useSession } from 'next-auth/react';
@@ -39,6 +39,7 @@ interface Patient {
   name: string;
   facilityId: string | null;
   facility: { id: string; name: string } | null;
+  visitNotes: string | null;
 }
 
 interface User {
@@ -615,6 +616,24 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                     </Button>
                   </Link>
                 )}
+                {/* 訪問時注意事項 */}
+                {formData.patientId && (() => {
+                  const selectedPatient = patients.find(p => p.id === formData.patientId);
+                  if (selectedPatient?.visitNotes) {
+                    return (
+                      <div className="mt-3 p-3 rounded-lg border-2 border-amber-300 bg-amber-50">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-amber-800">訪問時の注意事項</p>
+                            <p className="text-sm text-amber-700 mt-1 whitespace-pre-wrap">{selectedPatient.visitNotes}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </>
           ) : (
@@ -734,52 +753,181 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
 
           {/* 既存イベントからのコピー機能 */}
           {event && canEdit && (
-            <div className="space-y-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="space-y-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
               <Label className="text-gray-700 font-medium flex items-center gap-2">
                 <Copy className="h-4 w-4 text-blue-500" />
-                この予定をコピー
+                先の予定をコピー作成
               </Label>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopyEvent(7)}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-100"
-                >
-                  +7日後
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopyEvent(14)}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-100"
-                >
-                  +14日後
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopyEvent(21)}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-100"
-                >
-                  +21日後
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopyEvent(28)}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-100"
-                >
-                  +28日後
-                </Button>
+              
+              {/* クイックコピー */}
+              <div className="space-y-2">
+                <p className="text-xs text-gray-600 font-medium">クイックコピー</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleCopyEvent(7)} className="border-blue-300 text-blue-600 hover:bg-blue-100">+7日後</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleCopyEvent(14)} className="border-blue-300 text-blue-600 hover:bg-blue-100">+14日後</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleCopyEvent(28)} className="border-blue-300 text-blue-600 hover:bg-blue-100">+28日後</Button>
+                </div>
               </div>
-              <p className="text-xs text-gray-500">
-                クリックすると同じ内容で指定日数後にコピーを作成します
-              </p>
+
+              {/* 日数指定コピー */}
+              <div className="space-y-2 pt-2 border-t border-blue-200">
+                <p className="text-xs text-gray-600 font-medium">日数分一括コピー</p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    max="365"
+                    placeholder="日数"
+                    className="w-20 bg-white border-blue-200 text-gray-800 text-sm"
+                    id="bulkCopyDays"
+                  />
+                  <span className="text-sm text-gray-600">日分コピー</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const input = document.getElementById('bulkCopyDays') as HTMLInputElement;
+                      const days = parseInt(input?.value || '0');
+                      if (days <= 0) {
+                        alert('1以上の日数を入力してください');
+                        return;
+                      }
+                      if (days > 365) {
+                        alert('365日以下で入力してください');
+                        return;
+                      }
+                      if (!confirm(`${days}件の予定を作成します。よろしいですか？`)) return;
+                      
+                      setLoading(true);
+                      let successCount = 0;
+                      for (let i = 1; i <= days; i++) {
+                        const newDate = addDays(new Date(event.date), i);
+                        const data = new FormData();
+                        data.append('type', formData.type);
+                        data.append('date', format(newDate, 'yyyy-MM-dd'));
+                        data.append('time', formData.time);
+                        if (selectionMode === 'facility') {
+                          data.append('facilityId', formData.facilityId);
+                          data.append('patientId', '');
+                        } else {
+                          data.append('patientId', formData.patientId);
+                          data.append('facilityId', '');
+                        }
+                        data.append('assigneeId', formData.assigneeId);
+                        data.append('notes', formData.notes);
+                        data.append('isCompleted', 'false');
+                        data.append('isRecurring', String(formData.isRecurring));
+                        data.append('recurringInterval', formData.recurringInterval);
+                        data.append('reportDone', 'false');
+                        data.append('planDone', 'false');
+                        const result = await createEvent(data);
+                        if (result.success) successCount++;
+                      }
+                      setLoading(false);
+                      alert(`${successCount}件の予定を作成しました`);
+                      onClose();
+                    }}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-100"
+                    disabled={loading}
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : '作成'}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">翌日から指定日数分、毎日の予定を一括作成</p>
+              </div>
+
+              {/* 期限指定コピー */}
+              <div className="space-y-2 pt-2 border-t border-blue-200">
+                <p className="text-xs text-gray-600 font-medium">期限指定コピー</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Input
+                    type="date"
+                    className="w-40 bg-white border-blue-200 text-gray-800 text-sm"
+                    id="copyUntilDate"
+                    min={format(addDays(new Date(event.date), 1), 'yyyy-MM-dd')}
+                  />
+                  <span className="text-sm text-gray-600">まで</span>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="30"
+                    defaultValue="7"
+                    placeholder="間隔"
+                    className="w-16 bg-white border-blue-200 text-gray-800 text-sm"
+                    id="copyInterval"
+                  />
+                  <span className="text-sm text-gray-600">日ごと</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const dateInput = document.getElementById('copyUntilDate') as HTMLInputElement;
+                      const intervalInput = document.getElementById('copyInterval') as HTMLInputElement;
+                      const endDate = dateInput?.value ? new Date(dateInput.value) : null;
+                      const interval = parseInt(intervalInput?.value || '7');
+                      
+                      if (!endDate) {
+                        alert('終了日を選択してください');
+                        return;
+                      }
+                      if (interval < 1 || interval > 30) {
+                        alert('間隔は1〜30日で入力してください');
+                        return;
+                      }
+                      
+                      const baseDate = new Date(event.date);
+                      const datesToCreate: Date[] = [];
+                      let currentDate = addDays(baseDate, interval);
+                      while (currentDate <= endDate) {
+                        datesToCreate.push(new Date(currentDate));
+                        currentDate = addDays(currentDate, interval);
+                      }
+                      
+                      if (datesToCreate.length === 0) {
+                        alert('指定した条件では予定を作成できません');
+                        return;
+                      }
+                      
+                      if (!confirm(`${datesToCreate.length}件の予定を作成します。よろしいですか？`)) return;
+                      
+                      setLoading(true);
+                      let successCount = 0;
+                      for (const newDate of datesToCreate) {
+                        const data = new FormData();
+                        data.append('type', formData.type);
+                        data.append('date', format(newDate, 'yyyy-MM-dd'));
+                        data.append('time', formData.time);
+                        if (selectionMode === 'facility') {
+                          data.append('facilityId', formData.facilityId);
+                          data.append('patientId', '');
+                        } else {
+                          data.append('patientId', formData.patientId);
+                          data.append('facilityId', '');
+                        }
+                        data.append('assigneeId', formData.assigneeId);
+                        data.append('notes', formData.notes);
+                        data.append('isCompleted', 'false');
+                        data.append('isRecurring', String(formData.isRecurring));
+                        data.append('recurringInterval', formData.recurringInterval);
+                        data.append('reportDone', 'false');
+                        data.append('planDone', 'false');
+                        const result = await createEvent(data);
+                        if (result.success) successCount++;
+                      }
+                      setLoading(false);
+                      alert(`${successCount}件の予定を作成しました`);
+                      onClose();
+                    }}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-100"
+                    disabled={loading}
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : '作成'}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">指定日まで、指定間隔で繰り返し予定を作成</p>
+              </div>
             </div>
           )}
 

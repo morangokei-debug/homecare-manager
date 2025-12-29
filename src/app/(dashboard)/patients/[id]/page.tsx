@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Trash2, FileDown } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Trash2, FileDown, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { updatePatient, deletePatient } from '@/app/actions/patients';
 import { PatientSummary } from '@/components/patient/patient-summary';
@@ -56,6 +56,7 @@ interface Patient {
   address: string | null;
   area: string | null;
   memo: string | null;
+  visitNotes: string | null;
   facilityId: string | null;
   careManagerName: string | null;
   careManagerPhone: string | null;
@@ -275,6 +276,25 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
                 </div>
               </>
             )}
+
+            {/* 訪問時注意事項 - 目立つ表示 */}
+            <div className="space-y-2 p-4 rounded-lg border-2 border-amber-300 bg-amber-50">
+              <Label htmlFor="visitNotes" className="text-amber-800 font-medium flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                訪問時の注意事項
+              </Label>
+              <Textarea
+                id="visitNotes"
+                name="visitNotes"
+                defaultValue={patient.visitNotes || ''}
+                placeholder="例：スリッパ持参必須、駐車場は建物裏、犬がいる"
+                rows={3}
+                className="bg-white border-amber-200 text-gray-800 resize-none placeholder:text-amber-400"
+              />
+              <p className="text-xs text-amber-600">
+                ⚠️ ここに入力した内容はカレンダーや予定画面で目立つ形で表示されます
+              </p>
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-gray-600">

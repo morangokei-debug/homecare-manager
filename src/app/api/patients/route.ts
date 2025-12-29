@@ -26,6 +26,7 @@ export async function GET(request: Request) {
       id: true,
       name: true,
       facilityId: true,
+      visitNotes: true,
       facility: includeFacility ? {
         select: {
           id: true,

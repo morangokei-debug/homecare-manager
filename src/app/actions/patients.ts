@@ -22,6 +22,7 @@ export async function createPatient(formData: FormData) {
     const address = formData.get('address') as string | null;
     const area = formData.get('area') as string | null;
     const notes = formData.get('notes') as string | null;
+    const visitNotes = formData.get('visitNotes') as string | null;
     const facilityId = formData.get('facilityId') as string;
     const careManagerName = formData.get('careManagerName') as string | null;
     const careManagerPhone = formData.get('careManagerPhone') as string | null;
@@ -37,6 +38,7 @@ export async function createPatient(formData: FormData) {
         address: address || null,
         area: area || null,
         memo: notes || null,
+        visitNotes: visitNotes || null,
         facilityId: facilityId && facilityId !== 'none' ? facilityId : null,
         careManagerName: careManagerName || null,
         careManagerPhone: careManagerPhone || null,
@@ -69,6 +71,7 @@ export async function updatePatient(formData: FormData) {
     const address = formData.get('address') as string | null;
     const area = formData.get('area') as string | null;
     const notes = formData.get('notes') as string | null;
+    const visitNotes = formData.get('visitNotes') as string | null;
     const facilityId = formData.get('facilityId') as string;
     const careManagerName = formData.get('careManagerName') as string | null;
     const careManagerPhone = formData.get('careManagerPhone') as string | null;
@@ -99,6 +102,7 @@ export async function updatePatient(formData: FormData) {
         address: address || null,
         area: area || null,
         memo: notes || null,
+        visitNotes: visitNotes || null,
         facilityId: facilityId && facilityId !== 'none' ? facilityId : null,
         careManagerName: careManagerName || null,
         careManagerPhone: careManagerPhone || null,

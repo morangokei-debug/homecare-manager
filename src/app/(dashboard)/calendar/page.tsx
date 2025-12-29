@@ -24,7 +24,7 @@ import { FileDown } from 'lucide-react';
 
 export interface CalendarEvent {
   id: string;
-  type: 'visit' | 'prescription';
+  type: 'visit' | 'prescription' | 'both';
   date: string;
   time: string | null;
   patientId: string | null;
@@ -33,6 +33,7 @@ export interface CalendarEvent {
   facilityName: string | null;
   displayMode: string;
   isFacilityEvent: boolean;
+  visitNotes: string | null;  // 訪問時注意事項
   assigneeId: string | null;
   assigneeName: string | null;
   notes: string | null;
