@@ -29,6 +29,7 @@ enum DisplayMode {
 enum EventType {
   visit
   prescription
+  both
 }
 
 enum EventStatus {

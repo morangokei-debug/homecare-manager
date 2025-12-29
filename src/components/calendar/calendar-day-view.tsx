@@ -253,10 +253,12 @@ export function CalendarDayView({ currentDate, events, onEventClick }: CalendarD
                         'text-xs',
                         event.type === 'visit'
                           ? 'border-emerald-500/50 text-emerald-400'
-                          : 'border-purple-500/50 text-purple-400'
+                          : event.type === 'prescription'
+                          ? 'border-purple-500/50 text-purple-400'
+                          : 'border-amber-500/50 text-amber-400'
                       )}
                     >
-                      {event.type === 'visit' ? '訪問' : '処方'}
+                      {event.type === 'visit' ? '訪問' : event.type === 'prescription' ? '処方' : '訪問+処方'}
                     </Badge>
                   </div>
                 </div>
@@ -332,10 +334,12 @@ function EventRow({ event, onClick }: { event: CalendarEvent; onClick: () => voi
               'text-xs shrink-0',
               event.type === 'visit'
                 ? 'border-emerald-500/50 text-emerald-400'
-                : 'border-purple-500/50 text-purple-400'
+                : event.type === 'prescription'
+                ? 'border-purple-500/50 text-purple-400'
+                : 'border-amber-500/50 text-amber-400'
             )}
           >
-            {event.type === 'visit' ? '訪問' : '処方'}
+            {event.type === 'visit' ? '訪問' : event.type === 'prescription' ? '処方' : '訪問+処方'}
           </Badge>
           {event.reportDone && (
             <span className="text-green-400 text-sm shrink-0" title="報告書済">✓</span>

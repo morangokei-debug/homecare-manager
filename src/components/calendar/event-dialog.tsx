@@ -74,7 +74,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
   const [copyCustomDays, setCopyCustomDays] = useState<string>(''); // カスタム日数（カンマ区切り）
 
   const [formData, setFormData] = useState({
-    type: 'visit' as 'visit' | 'prescription',
+    type: 'visit' as 'visit' | 'prescription' | 'both',
     date: '',
     time: '',
     patientId: '',
@@ -337,7 +337,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
             <Label className="text-gray-600">種別</Label>
             <Select
               value={formData.type}
-              onValueChange={(value: 'visit' | 'prescription') =>
+              onValueChange={(value: 'visit' | 'prescription' | 'both') =>
                 setFormData({ ...formData, type: value })
               }
             >
@@ -347,6 +347,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
               <SelectContent>
                 <SelectItem value="visit">🏠 訪問</SelectItem>
                 <SelectItem value="prescription">💊 処方</SelectItem>
+                <SelectItem value="both">🏠💊 訪問+処方</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -568,54 +569,52 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
                     ({filteredPatients.length}名)
                   </span>
                 </Label>
-                <div className="flex gap-2">
-                  <Select
-                    value={formData.patientId}
-                    onValueChange={(value) => setFormData({ ...formData, patientId: value })}
-                    required
-                  >
-                    <SelectTrigger className="bg-gray-50 border-gray-200 flex-1 text-gray-800">
-                      <SelectValue placeholder="患者を選択" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredPatients.map((patient) => (
-                        <SelectItem key={patient.id} value={patient.id}>
-                          <div className="flex items-center gap-2">
-                            {patient.facility ? (
-                              <Building2 className="h-3.5 w-3.5 text-blue-400" />
-                            ) : (
-                              <Home className="h-3.5 w-3.5 text-emerald-400" />
-                            )}
-                            <span>{patient.name}</span>
-                            {patient.facility && (
-                              <span className="text-xs text-gray-500">
-                                ({patient.facility.name})
-                              </span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                      {filteredPatients.length === 0 && (
-                        <div className="px-2 py-4 text-center text-gray-400 text-sm">
-                          該当する患者がいません
+                <Select
+                  value={formData.patientId}
+                  onValueChange={(value) => setFormData({ ...formData, patientId: value })}
+                  required
+                >
+                  <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-800">
+                    <SelectValue placeholder="患者を選択" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredPatients.map((patient) => (
+                      <SelectItem key={patient.id} value={patient.id}>
+                        <div className="flex items-center gap-2">
+                          {patient.facility ? (
+                            <Building2 className="h-3.5 w-3.5 text-blue-400" />
+                          ) : (
+                            <Home className="h-3.5 w-3.5 text-emerald-400" />
+                          )}
+                          <span>{patient.name}</span>
+                          {patient.facility && (
+                            <span className="text-xs text-gray-500">
+                              ({patient.facility.name})
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {formData.patientId && (
-                    <Link href={`/patients/${formData.patientId}`} target="_blank">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="border-gray-200 hover:bg-gray-100"
-                        title="患者詳細を見る"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  )}
-                </div>
+                      </SelectItem>
+                    ))}
+                    {filteredPatients.length === 0 && (
+                      <div className="px-2 py-4 text-center text-gray-400 text-sm">
+                        該当する患者がいません
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+                {formData.patientId && (
+                  <Link href={`/patients/${formData.patientId}`} target="_blank">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-emerald-300 text-emerald-600 hover:bg-emerald-50 mt-2"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      患者詳細を開く
+                    </Button>
+                  </Link>
+                )}
               </div>
             </>
           ) : (

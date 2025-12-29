@@ -211,10 +211,12 @@ export function CalendarWeekView({ currentDate, events, onDateClick, onEventClic
                         'text-xs',
                         event.type === 'visit'
                           ? 'border-emerald-500/50 text-emerald-400'
-                          : 'border-purple-500/50 text-purple-400'
+                          : event.type === 'prescription'
+                          ? 'border-purple-500/50 text-purple-400'
+                          : 'border-amber-500/50 text-amber-400'
                       )}
                     >
-                      {event.type === 'visit' ? '訪問' : '処方'}
+                      {event.type === 'visit' ? '訪問' : event.type === 'prescription' ? '処方' : '訪問+処方'}
                     </Badge>
                   </div>
                 </div>
@@ -267,7 +269,9 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
 
   const icon = event.type === 'visit'
     ? event.facilityName ? '🏢' : '🏠'
-    : '💊';
+    : event.type === 'prescription'
+    ? '💊'
+    : '🏠💊';
 
   return (
     <div
@@ -276,7 +280,9 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
         'p-2 rounded-lg cursor-pointer transition-colors',
         event.type === 'visit'
           ? 'bg-emerald-500/20 hover:bg-emerald-500/30'
-          : 'bg-purple-500/20 hover:bg-purple-500/30'
+          : event.type === 'prescription'
+          ? 'bg-purple-500/20 hover:bg-purple-500/30'
+          : 'bg-amber-500/20 hover:bg-amber-500/30'
       )}
     >
       <div className="flex items-center gap-2">
@@ -284,10 +290,14 @@ function EventCard({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
         <span
           className={cn(
             'text-xs font-medium',
-            event.type === 'visit' ? 'text-emerald-300' : 'text-purple-300'
+            event.type === 'visit'
+              ? 'text-emerald-300'
+              : event.type === 'prescription'
+              ? 'text-purple-300'
+              : 'text-amber-300'
           )}
         >
-          {event.type === 'visit' ? '訪問' : '処方'}
+          {event.type === 'visit' ? '訪問' : event.type === 'prescription' ? '処方' : '訪問+処方'}
         </span>
         {event.reportDone && (
           <span className="text-green-400 text-xs" title="報告書済">✓</span>

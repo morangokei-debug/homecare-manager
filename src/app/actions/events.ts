@@ -58,7 +58,7 @@ export async function createEvent(formData: FormData) {
 
     await prisma.event.create({
       data: {
-        type: type as 'visit' | 'prescription',
+        type: type as 'visit' | 'prescription' | 'both',
         date: new Date(date),
         time: timeValue,
         patientId: patientId || null,
@@ -131,7 +131,7 @@ export async function updateEvent(formData: FormData) {
     await prisma.event.update({
       where: { id },
       data: {
-        type: type as 'visit' | 'prescription',
+        type: type as 'visit' | 'prescription' | 'both',
         date: new Date(date),
         time: timeValue,
         patientId: patientId || null,

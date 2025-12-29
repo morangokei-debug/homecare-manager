@@ -151,6 +151,7 @@ export function PdfExportButton({ currentDate, viewMode }: PdfExportButtonProps)
                 <SelectItem value="all">すべて</SelectItem>
                 <SelectItem value="visit">訪問のみ</SelectItem>
                 <SelectItem value="prescription">処方のみ</SelectItem>
+                <SelectItem value="both">訪問+処方のみ</SelectItem>
               </SelectContent>
             </Select>
           </div>
