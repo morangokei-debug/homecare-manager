@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,15 +13,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Filter, FileDown } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { CalendarMonthView } from '@/components/calendar/calendar-month-view';
 import { CalendarWeekView } from '@/components/calendar/calendar-week-view';
 import { CalendarDayView } from '@/components/calendar/calendar-day-view';
-import { EventDialog } from '@/components/calendar/event-dialog';
-import { CalendarPdfExport } from '@/components/calendar/calendar-pdf-export';
 import { cn } from '@/lib/utils';
-import { FileDown } from 'lucide-react';
+
+// ダイアログ/PDF 出力は開いた時だけ読み込む（初回表示を速くする）
+// - EventDialog: フォーム + 業務ロジックで大きい
+// - CalendarPdfExport: jspdf + html2canvas を含むため最重量
+const EventDialog = dynamic(
+  () => import('@/components/calendar/event-dialog').then((m) => m.EventDialog),
+  { ssr: false },
+);
+const CalendarPdfExport = dynamic(
+  () => import('@/components/calendar/calendar-pdf-export').then((m) => m.CalendarPdfExport),
+  { ssr: false },
+);
 
 export interface CalendarEvent {
   id: string;
@@ -367,21 +377,25 @@ export default function CalendarPage() {
         </CardContent>
       </Card>
 
-      {/* イベント登録/編集ダイアログ */}
-      <EventDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        selectedDate={selectedDate}
-        event={selectedEvent}
-      />
+      {/* イベント登録/編集ダイアログ（開いた時だけ読み込む） */}
+      {dialogOpen && (
+        <EventDialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          selectedDate={selectedDate}
+          event={selectedEvent}
+        />
+      )}
 
-      {/* PDF出力ダイアログ */}
-      <CalendarPdfExport
-        open={pdfExportOpen}
-        onClose={() => setPdfExportOpen(false)}
-        currentDate={currentDate}
-        events={filteredEvents}
-      />
+      {/* PDF出力ダイアログ（ボタンを押した時だけ読み込む） */}
+      {pdfExportOpen && (
+        <CalendarPdfExport
+          open={pdfExportOpen}
+          onClose={() => setPdfExportOpen(false)}
+          currentDate={currentDate}
+          events={filteredEvents}
+        />
+      )}
     </div>
   );
 }

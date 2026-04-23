@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
+import { useState, useMemo } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, startOfWeek, endOfWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -39,40 +39,67 @@ export function CalendarMonthView({ currentDate, events, onDateClick, onEventCli
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
   const [selectedFacilityGroup, setSelectedFacilityGroup] = useState<GroupedFacilityEvents | null>(null);
 
-  // 日付ごとにイベントを取得し、施設でグループ化
-  const getEventsForDay = (date: Date) => {
-    const dayEvents = events.filter((event) => isSameDay(new Date(event.date), date));
-    
-    // grouped施設のイベントをまとめる
-    const groupedFacilities: Map<string, GroupedFacilityEvents> = new Map();
-    const individualEvents: CalendarEvent[] = [];
-    const facilityEvents: CalendarEvent[] = []; // 施設全体イベント
+  // events を 1 回だけ走査して「日付(yyyy-MM-dd) → 分類済みイベント」のマップに変換する。
+  // 以前は各日ごとに events 全件を filter していたため O(35 × N) かかっていた。
+  // ここで一度だけ O(N) で分類することで、月表示の描画がイベント数に比例しなくなる。
+  interface DayBuckets {
+    groupedFacilities: Map<string, GroupedFacilityEvents>;
+    individualEvents: CalendarEvent[];
+    facilityEvents: CalendarEvent[];
+  }
 
-    dayEvents.forEach((event) => {
-      // 施設全体のイベント（isFacilityEvent）
+  const eventsByDay = useMemo(() => {
+    const map = new Map<string, DayBuckets>();
+    for (const event of events) {
+      // event.date は API 側で 'yyyy-MM-dd' 形式の文字列。先頭10桁を鍵にする。
+      const key = typeof event.date === 'string' ? event.date.slice(0, 10) : '';
+      if (!key) continue;
+
+      let bucket = map.get(key);
+      if (!bucket) {
+        bucket = {
+          groupedFacilities: new Map(),
+          individualEvents: [],
+          facilityEvents: [],
+        };
+        map.set(key, bucket);
+      }
+
       if (event.isFacilityEvent) {
-        facilityEvents.push(event);
+        bucket.facilityEvents.push(event);
       } else if (event.facilityName && event.displayMode === 'grouped') {
-        // grouped施設の患者イベント
-        const key = event.facilityName;
-        if (!groupedFacilities.has(key)) {
-          groupedFacilities.set(key, {
-            facilityId: key,
+        const facilityKey = event.facilityName;
+        let group = bucket.groupedFacilities.get(facilityKey);
+        if (!group) {
+          group = {
+            facilityId: facilityKey,
             facilityName: event.facilityName,
             events: [],
-          });
+          };
+          bucket.groupedFacilities.set(facilityKey, group);
         }
-        groupedFacilities.get(key)!.events.push(event);
+        group.events.push(event);
       } else {
-        // 個人宅またはindividual施設のイベント
-        individualEvents.push(event);
+        bucket.individualEvents.push(event);
       }
-    });
+    }
+    return map;
+  }, [events]);
 
+  const getEventsForDay = (date: Date) => {
+    const key = format(date, 'yyyy-MM-dd');
+    const bucket = eventsByDay.get(key);
+    if (!bucket) {
+      return {
+        groupedFacilities: [],
+        individualEvents: [],
+        facilityEvents: [],
+      };
+    }
     return {
-      groupedFacilities: Array.from(groupedFacilities.values()),
-      individualEvents,
-      facilityEvents,
+      groupedFacilities: Array.from(bucket.groupedFacilities.values()),
+      individualEvents: bucket.individualEvents,
+      facilityEvents: bucket.facilityEvents,
     };
   };
 

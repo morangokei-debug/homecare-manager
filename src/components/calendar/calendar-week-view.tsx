@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { format, eachDayOfInterval, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
+import { useState, useMemo } from 'react';
+import { format, eachDayOfInterval, startOfWeek, endOfWeek, isToday } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -37,40 +37,64 @@ export function CalendarWeekView({ currentDate, events, onDateClick, onEventClic
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
   const [selectedFacilityGroup, setSelectedFacilityGroup] = useState<GroupedFacilityEvents | null>(null);
 
-  // 日付ごとにイベントを取得し、施設でグループ化
-  const getEventsForDay = (date: Date) => {
-    const dayEvents = events.filter((event) => isSameDay(new Date(event.date), date));
-    
-    // grouped施設のイベントをまとめる
-    const groupedFacilities: Map<string, GroupedFacilityEvents> = new Map();
-    const individualEvents: CalendarEvent[] = [];
+  // events を 1 回だけ走査して「日付(yyyy-MM-dd) → 分類済み」のマップに変換する
+  // （以前は各日ごとに events 全件を filter していた）
+  interface DayBuckets {
+    groupedFacilities: Map<string, GroupedFacilityEvents>;
+    individualEvents: CalendarEvent[];
+  }
 
-    dayEvents.forEach((event) => {
+  const eventsByDay = useMemo(() => {
+    const map = new Map<string, DayBuckets>();
+    for (const event of events) {
+      const key = typeof event.date === 'string' ? event.date.slice(0, 10) : '';
+      if (!key) continue;
+
+      let bucket = map.get(key);
+      if (!bucket) {
+        bucket = { groupedFacilities: new Map(), individualEvents: [] };
+        map.set(key, bucket);
+      }
+
       if (event.facilityName && event.displayMode === 'grouped') {
-        // grouped施設のイベント
-        const key = event.facilityName;
-        if (!groupedFacilities.has(key)) {
-          groupedFacilities.set(key, {
-            facilityId: key,
+        const facilityKey = event.facilityName;
+        let group = bucket.groupedFacilities.get(facilityKey);
+        if (!group) {
+          group = {
+            facilityId: facilityKey,
             facilityName: event.facilityName,
             events: [],
-          });
+          };
+          bucket.groupedFacilities.set(facilityKey, group);
         }
-        groupedFacilities.get(key)!.events.push(event);
+        group.events.push(event);
       } else {
-        // 個人宅またはindividual施設のイベント
-        individualEvents.push(event);
+        bucket.individualEvents.push(event);
       }
-    });
+    }
 
+    // 個別イベントは時刻昇順で事前ソート（毎描画時にソートし直さない）
+    const sortByTime = (a: CalendarEvent, b: CalendarEvent) => {
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return 1;
+      if (!b.time) return -1;
+      return a.time.localeCompare(b.time);
+    };
+    for (const bucket of map.values()) {
+      bucket.individualEvents.sort(sortByTime);
+    }
+    return map;
+  }, [events]);
+
+  const getEventsForDay = (date: Date) => {
+    const key = format(date, 'yyyy-MM-dd');
+    const bucket = eventsByDay.get(key);
+    if (!bucket) {
+      return { groupedFacilities: [], individualEvents: [] };
+    }
     return {
-      groupedFacilities: Array.from(groupedFacilities.values()),
-      individualEvents: individualEvents.sort((a, b) => {
-        if (!a.time && !b.time) return 0;
-        if (!a.time) return 1;
-        if (!b.time) return -1;
-        return a.time.localeCompare(b.time);
-      }),
+      groupedFacilities: Array.from(bucket.groupedFacilities.values()),
+      individualEvents: bucket.individualEvents,
     };
   };
 
