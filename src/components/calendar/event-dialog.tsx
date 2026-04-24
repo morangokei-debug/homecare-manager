@@ -334,6 +334,20 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
           </DialogTitle>
         </DialogHeader>
 
+        {/* 訪問報告書を書く - 既存予定で患者が紐づいている時のみ表示 */}
+        {event && event.patientId && canEdit && (
+          <div className="-mt-2 mb-1">
+            <Button
+              type="button"
+              onClick={() => setReportFormOpen(true)}
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              この訪問の報告書を書く
+            </Button>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* イベント種別 */}
           <div className="space-y-2">
