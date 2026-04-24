@@ -21,11 +21,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Trash2, Home, Building2, Copy, ExternalLink, Users, CalendarPlus, AlertTriangle } from 'lucide-react';
+import { Loader2, Save, Trash2, Home, Building2, Copy, ExternalLink, Users, CalendarPlus, AlertTriangle, FileText } from 'lucide-react';
 import { createEvent, updateEvent, deleteEvent } from '@/app/actions/events';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { VisitReportForm } from '@/components/patient/visit-report-form';
 
 interface EventDialogProps {
   open: boolean;
@@ -59,6 +60,7 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
   const canEdit = session?.user?.role !== 'viewer';
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [reportFormOpen, setReportFormOpen] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -934,17 +936,31 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
           {/* 書類チェック */}
           {event && (
             <div className="space-y-3 p-3 rounded-lg bg-gray-100/30 border border-gray-200">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="reportDone"
-                  checked={formData.reportDone}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, reportDone: checked as boolean })
-                  }
-                />
-                <Label htmlFor="reportDone" className="text-gray-700 font-medium">
-                  📄 報告書 記載済み
-                </Label>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="reportDone"
+                    checked={formData.reportDone}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, reportDone: checked as boolean })
+                    }
+                  />
+                  <Label htmlFor="reportDone" className="text-gray-700 font-medium">
+                    📄 報告書 記載済み
+                  </Label>
+                </div>
+                {event.patientId && canEdit && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setReportFormOpen(true)}
+                    className="border-emerald-400 text-emerald-700 hover:bg-emerald-50"
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    報告書を書く
+                  </Button>
+                )}
               </div>
               <div className="flex items-center space-x-2 pl-1">
                 <Checkbox
@@ -1013,6 +1029,19 @@ export function EventDialog({ open, onClose, selectedDate, event }: EventDialogP
           </div>
         </form>
       </DialogContent>
+      {/* 訪問報告書フォーム（カレンダーからの導線） */}
+      {event?.patientId && reportFormOpen && (
+        <VisitReportForm
+          open={reportFormOpen}
+          onClose={() => setReportFormOpen(false)}
+          onSaved={() => {
+            setFormData((prev) => ({ ...prev, reportDone: true }));
+          }}
+          patientId={event.patientId}
+          eventId={event.id}
+          defaultDate={event.date}
+        />
+      )}
     </Dialog>
   );
 }

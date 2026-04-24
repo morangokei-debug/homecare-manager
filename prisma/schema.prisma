@@ -53,9 +53,11 @@ model Organization {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  users      User[]
-  patients   Patient[]
-  facilities Facility[]
+  users        User[]
+  patients     Patient[]
+  facilities   Facility[]
+  visitReports VisitReport[]
+  visitPlans   VisitPlan[]
 
   @@index([code])
   @@index([isActive])
@@ -86,6 +88,10 @@ model User {
   
   // 患者ドキュメント関連
   uploadedDocuments PatientDocument[]
+
+  // 報告書・計画書
+  visitReports VisitReport[]
+  visitPlans   VisitPlan[]
   
   // ICSカレンダートークン
   icsToken IcsToken?
@@ -172,6 +178,8 @@ model Patient {
   events       Event[]
   summary      PatientSummary?
   documents    PatientDocument[]
+  visitReports VisitReport[]
+  visitPlans   VisitPlan[]
 
   @@index([name])
   @@index([nameKana])
@@ -205,6 +213,7 @@ model Event {
   facility   Facility?  @relation(fields: [facilityId], references: [id], onDelete: Restrict)
   assignee   User?      @relation("EventAssignedTo", fields: [assignedTo], references: [id], onDelete: SetNull)
   creator    User       @relation("EventCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
+  visitReports VisitReport[]
 
   @@index([date])
   @@index([patientId])
@@ -329,4 +338,102 @@ model PatientDocument {
   @@index([type])
   @@index([uploadedAt])
   @@map("patient_documents")
+}
+
+// ============================================
+// 訪問薬剤管理指導 報告書（訪問の都度作成）
+// ============================================
+
+model VisitReport {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  patientId      String   @map("patient_id")
+  eventId        String?  @map("event_id")
+  visitDate      DateTime @map("visit_date") @db.Date
+
+  // 処方医療機関・医師
+  prescribingClinic String? @map("prescribing_clinic") @db.VarChar(200)
+  prescribingDoctor String? @map("prescribing_doctor") @db.VarChar(100)
+
+  // 患者の状態
+  generalCondition   String? @map("general_condition") @db.VarChar(1000)
+  medicationStatus   String? @map("medication_status") @db.VarChar(1000)
+  sideEffects        String? @map("side_effects") @db.VarChar(1000)
+  treatmentEffect    String? @map("treatment_effect") @db.VarChar(1000)
+  understandingLevel String? @map("understanding_level") @db.VarChar(1000)
+  livingConditions   String? @map("living_conditions") @db.VarChar(1000)
+
+  // 指導内容
+  guidanceContent String? @map("guidance_content") @db.VarChar(2000)
+
+  // 医師への報告・提案事項
+  reportToDoctor String? @map("report_to_doctor") @db.VarChar(2000)
+
+  // 次回訪問予定・特記事項
+  nextVisitPlan String? @map("next_visit_plan") @db.VarChar(500)
+  specialNotes  String? @map("special_notes") @db.VarChar(1000)
+
+  // メタ情報
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  event        Event?       @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  creator      User         @relation(fields: [createdBy], references: [id])
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([eventId])
+  @@index([visitDate])
+  @@map("visit_reports")
+}
+
+// ============================================
+// 居宅療養管理指導 計画書（月1回作成）
+// ============================================
+
+model VisitPlan {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  patientId      String   @map("patient_id")
+  planMonth      String   @map("plan_month") @db.VarChar(7) // YYYY-MM
+
+  // 計画期間
+  periodStart DateTime @map("period_start") @db.Date
+  periodEnd   DateTime @map("period_end") @db.Date
+
+  // 訪問計画
+  visitFrequency String? @map("visit_frequency") @db.VarChar(200)
+
+  // 課題・目標
+  issuesAndGoals String? @map("issues_and_goals") @db.VarChar(2000)
+
+  // 管理指導の具体的内容
+  guidanceDetails String? @map("guidance_details") @db.VarChar(2000)
+
+  // 留意事項
+  considerations String? @map("considerations") @db.VarChar(1000)
+
+  // 処方医療機関・医師
+  prescribingClinic String? @map("prescribing_clinic") @db.VarChar(200)
+  prescribingDoctor String? @map("prescribing_doctor") @db.VarChar(100)
+
+  // メタ情報
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  creator      User         @relation(fields: [createdBy], references: [id])
+
+  @@unique([patientId, planMonth])
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([planMonth])
+  @@map("visit_plans")
 }

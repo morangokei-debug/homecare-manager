@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { updatePatient, deletePatient } from '@/app/actions/patients';
 import { PatientSummary } from '@/components/patient/patient-summary';
 import { PatientDocuments } from '@/components/patient/patient-documents';
+import { VisitDocumentsSection } from '@/components/patient/visit-documents-section';
 import { ApproachType } from '@prisma/client';
 
 interface Facility {
@@ -422,6 +423,9 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
           </CardContent>
         </Card>
       </form>
+
+      {/* 訪問報告書・計画書 */}
+      <VisitDocumentsSection patientId={patient.id} />
 
       {/* ドキュメント・写真 */}
       <PatientDocuments patientId={patient.id} />
