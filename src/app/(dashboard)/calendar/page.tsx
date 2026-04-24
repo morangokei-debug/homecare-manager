@@ -20,16 +20,14 @@ import { CalendarWeekView } from '@/components/calendar/calendar-week-view';
 import { CalendarDayView } from '@/components/calendar/calendar-day-view';
 import { cn } from '@/lib/utils';
 
-// ダイアログ/PDF 出力は開いた時だけ読み込む（初回表示を速くする）
-// - EventDialog: フォーム + 業務ロジックで大きい
-// - CalendarPdfExport: jspdf + html2canvas を含むため最重量
 const EventDialog = dynamic(
   () => import('@/components/calendar/event-dialog').then((m) => m.EventDialog),
-  { ssr: false },
+  { ssr: false }
 );
+
 const CalendarPdfExport = dynamic(
   () => import('@/components/calendar/calendar-pdf-export').then((m) => m.CalendarPdfExport),
-  { ssr: false },
+  { ssr: false }
 );
 
 export interface CalendarEvent {

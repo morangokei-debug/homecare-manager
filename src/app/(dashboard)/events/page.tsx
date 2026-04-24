@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { format, startOfMonth, endOfMonth, addMonths } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,8 +39,12 @@ import {
   Loader2,
   FileDown,
 } from 'lucide-react';
-import { EventDialog } from '@/components/calendar/event-dialog';
 import type { CalendarEvent } from '@/app/(dashboard)/calendar/page';
+
+const EventDialog = dynamic(
+  () => import('@/components/calendar/event-dialog').then((m) => m.EventDialog),
+  { ssr: false }
+);
 
 export default function EventsPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());

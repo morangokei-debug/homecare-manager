@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,6 +49,7 @@ type ViewMode = 'grouped' | 'table';
 type FilterMode = 'all' | 'facility' | 'individual';
 
 export default function PatientsPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const canEdit = session?.user?.role !== 'viewer';
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -326,7 +328,8 @@ export default function PatientsPage() {
                           <TableRow
                             key={patient.id}
                             className="border-gray-100 cursor-pointer hover:bg-gray-50"
-                            onClick={() => (window.location.href = `/patients/${patient.id}`)}
+                            onMouseEnter={() => router.prefetch(`/patients/${patient.id}`)}
+                            onClick={() => router.push(`/patients/${patient.id}`)}
                           >
                             <TableCell className="font-medium text-gray-800">
                               {patient.name}
@@ -370,7 +373,8 @@ export default function PatientsPage() {
                 <TableRow
                   key={patient.id}
                   className="border-gray-100 cursor-pointer hover:bg-gray-50"
-                  onClick={() => (window.location.href = `/patients/${patient.id}`)}
+                  onMouseEnter={() => router.prefetch(`/patients/${patient.id}`)}
+                  onClick={() => router.push(`/patients/${patient.id}`)}
                 >
                   <TableCell>
                     {patient.facility ? (

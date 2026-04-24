@@ -1,7 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
-import Link from 'next/link';
+import { useEffect, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
@@ -35,6 +34,14 @@ export function Sidebar() {
   
   const isSuperAdmin = session?.user?.role === 'super_admin';
 
+  // サイドバー表示直後に全メニューを先読みしておく（クリック時の体感を上げる）
+  useEffect(() => {
+    const items = isSuperAdmin
+      ? [...adminNavigation, { name: '設定', href: '/settings', icon: Settings }]
+      : navigation;
+    items.forEach((item) => router.prefetch(item.href));
+  }, [router, isSuperAdmin]);
+
   const handleNavigation = (href: string) => {
     startTransition(() => {
       router.push(href);
@@ -44,9 +51,10 @@ export function Sidebar() {
   const NavItem = ({ item, isAdmin = false }: { item: typeof navigation[0], isAdmin?: boolean }) => {
     const isActive = pathname.startsWith(item.href);
     const isNavigating = isPending && !isActive;
-    
+
     return (
       <button
+        onMouseEnter={() => router.prefetch(item.href)}
         onClick={() => handleNavigation(item.href)}
         className={cn(
           'w-full group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all text-left',
