@@ -210,7 +210,7 @@ export default function MastersPage() {
                   {careManagers.map((c) => (
                     <div key={c.id} className="flex items-center justify-between gap-4 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-800">{c.name}</p>
+                        <p className="font-medium text-gray-800">{c.name} 様</p>
                         <p className="text-sm text-gray-500">
                           {c.officeName && `${c.officeName}`}{c.phone && ` ／ ${c.phone}`}
                         </p>
