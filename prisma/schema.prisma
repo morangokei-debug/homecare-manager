@@ -430,6 +430,7 @@ model VisitReport {
   @@index([patientId])
   @@index([eventId])
   @@index([visitDate])
+  @@index([organizationId, visitDate])
   @@map("visit_reports")
 }
 
@@ -477,5 +478,6 @@ model VisitPlan {
   @@index([organizationId])
   @@index([patientId])
   @@index([planMonth])
+  @@index([organizationId, planMonth])
   @@map("visit_plans")
 }

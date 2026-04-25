@@ -22,74 +22,30 @@ export async function GET(
   const monthEnd = endOfMonth(now);
 
   try {
-    // この組織の患者IDを取得
-    const patients = await prisma.patient.findMany({
-      where: { organizationId: id },
-      select: { id: true },
-    });
-    const patientIds = patients.map(p => p.id);
+    // 患者ID・施設ID取得と4つのcountを並列実行
+    const [patients, facilities] = await Promise.all([
+      prisma.patient.findMany({ where: { organizationId: id }, select: { id: true } }),
+      prisma.facility.findMany({ where: { organizationId: id }, select: { id: true } }),
+    ]);
+    const patientIds = patients.map((p) => p.id);
+    const facilityIds = facilities.map((f) => f.id);
 
-    // この組織の施設IDを取得
-    const facilities = await prisma.facility.findMany({
-      where: { organizationId: id },
-      select: { id: true },
-    });
-    const facilityIds = facilities.map(f => f.id);
+    const orgFilter = {
+      OR: [
+        { patientId: { in: patientIds } },
+        { facilityId: { in: facilityIds } },
+      ],
+    };
 
-    // 総イベント数
-    const totalEvents = await prisma.event.count({
-      where: {
-        OR: [
-          { patientId: { in: patientIds } },
-          { facilityId: { in: facilityIds } },
-        ],
-      },
-    });
+    const [totalEvents, thisMonthEvents, upcomingVisits, upcomingPrescriptions] =
+      await Promise.all([
+        prisma.event.count({ where: orgFilter }),
+        prisma.event.count({ where: { date: { gte: monthStart, lte: monthEnd }, ...orgFilter } }),
+        prisma.event.count({ where: { type: 'visit', date: { gte: now }, ...orgFilter } }),
+        prisma.event.count({ where: { type: 'prescription', date: { gte: now }, ...orgFilter } }),
+      ]);
 
-    // 今月のイベント数
-    const thisMonthEvents = await prisma.event.count({
-      where: {
-        date: {
-          gte: monthStart,
-          lte: monthEnd,
-        },
-        OR: [
-          { patientId: { in: patientIds } },
-          { facilityId: { in: facilityIds } },
-        ],
-      },
-    });
-
-    // 今後の訪問予定
-    const upcomingVisits = await prisma.event.count({
-      where: {
-        type: 'visit',
-        date: { gte: now },
-        OR: [
-          { patientId: { in: patientIds } },
-          { facilityId: { in: facilityIds } },
-        ],
-      },
-    });
-
-    // 今後の処方予定
-    const upcomingPrescriptions = await prisma.event.count({
-      where: {
-        type: 'prescription',
-        date: { gte: now },
-        OR: [
-          { patientId: { in: patientIds } },
-          { facilityId: { in: facilityIds } },
-        ],
-      },
-    });
-
-    return NextResponse.json({
-      totalEvents,
-      thisMonthEvents,
-      upcomingVisits,
-      upcomingPrescriptions,
-    });
+    return NextResponse.json({ totalEvents, thisMonthEvents, upcomingVisits, upcomingPrescriptions });
   } catch (error) {
     console.error('Failed to fetch organization stats:', error);
     return NextResponse.json({ error: '統計情報の取得に失敗しました' }, { status: 500 });

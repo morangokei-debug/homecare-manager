@@ -32,9 +32,17 @@ export async function GET(request: Request) {
     },
     include: {
       patient: {
-        include: { facility: true },
+        select: {
+          name: true,
+          visitNotes: true,
+          facility: {
+            select: { name: true, displayMode: true },
+          },
+        },
       },
-      facility: true,
+      facility: {
+        select: { name: true },
+      },
       assignee: {
         select: { id: true, name: true },
       },
