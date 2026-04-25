@@ -31,11 +31,11 @@ interface CareManager {
   memo: string | null;
 }
 
-type DoctorForm = { clinicName: string; doctorName: string; phone: string; memo: string };
-type CareManagerForm = { name: string; officeName: string; phone: string; memo: string };
+type DoctorForm = { clinicName: string; doctorName: string; address: string; phone: string; memo: string };
+type CareManagerForm = { name: string; officeName: string; address: string; phone: string; memo: string };
 
-const EMPTY_DOCTOR: DoctorForm = { clinicName: '', doctorName: '', phone: '', memo: '' };
-const EMPTY_CM: CareManagerForm = { name: '', officeName: '', phone: '', memo: '' };
+const EMPTY_DOCTOR: DoctorForm = { clinicName: '', doctorName: '', address: '', phone: '', memo: '' };
+const EMPTY_CM: CareManagerForm = { name: '', officeName: '', address: '', phone: '', memo: '' };
 
 export default function MastersPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -76,7 +76,7 @@ export default function MastersPage() {
   };
   const openEditDoctor = (d: Doctor) => {
     setEditingDoctor(d);
-    setDoctorForm({ clinicName: d.clinicName, doctorName: d.doctorName, phone: d.phone || '', memo: d.memo || '' });
+    setDoctorForm({ clinicName: d.clinicName, doctorName: d.doctorName, address: (d as Doctor & { address?: string }).address || '', phone: d.phone || '', memo: d.memo || '' });
     setDoctorDialogOpen(true);
   };
   const saveDoctor = async (e: React.FormEvent) => {
@@ -111,7 +111,7 @@ export default function MastersPage() {
   };
   const openEditCm = (c: CareManager) => {
     setEditingCm(c);
-    setCmForm({ name: c.name, officeName: c.officeName || '', phone: c.phone || '', memo: c.memo || '' });
+    setCmForm({ name: c.name, officeName: c.officeName || '', address: (c as CareManager & { address?: string }).address || '', phone: c.phone || '', memo: c.memo || '' });
     setCmDialogOpen(true);
   };
   const saveCm = async (e: React.FormEvent) => {
@@ -259,6 +259,14 @@ export default function MastersPage() {
               />
             </div>
             <div className="space-y-2">
+              <Label>住所（送付先）</Label>
+              <Input
+                value={doctorForm.address}
+                onChange={(e) => setDoctorForm((p) => ({ ...p, address: e.target.value }))}
+                placeholder="〒000-0000 北九州市○○区..."
+              />
+            </div>
+            <div className="space-y-2">
               <Label>電話番号</Label>
               <Input
                 value={doctorForm.phone}
@@ -307,6 +315,14 @@ export default function MastersPage() {
                 value={cmForm.officeName}
                 onChange={(e) => setCmForm((p) => ({ ...p, officeName: e.target.value }))}
                 placeholder="○○居宅介護支援事業所"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>住所（送付先）</Label>
+              <Input
+                value={cmForm.address}
+                onChange={(e) => setCmForm((p) => ({ ...p, address: e.target.value }))}
+                placeholder="〒000-0000 北九州市○○区..."
               />
             </div>
             <div className="space-y-2">

@@ -37,6 +37,27 @@ export async function GET(
     },
   });
 
+  // 医師・ケアマネマスタから送付先情報を取得
+  const doctorMaster = report && report.prescribingClinic && report.prescribingDoctor
+    ? await prisma.doctor.findFirst({
+        where: {
+          organizationId: report.organizationId,
+          clinicName: report.prescribingClinic,
+          doctorName: report.prescribingDoctor,
+          isActive: true,
+        },
+      })
+    : null;
+  const careManagerMaster = report?.patient.careManagerName
+    ? await prisma.careManager.findFirst({
+        where: {
+          organizationId: report.organizationId,
+          name: report.patient.careManagerName,
+          isActive: true,
+        },
+      })
+    : null;
+
   if (!report) {
     return new Response('Not found', { status: 404 });
   }
@@ -152,6 +173,27 @@ export async function GET(
     font-size: 14px;
   }
   .print-toolbar button:hover { background: #059669; }
+  .recipient-block {
+    margin-bottom: 6mm;
+    font-size: 10.5pt;
+    line-height: 1.8;
+  }
+  .recipient-block .address {
+    color: #444;
+    font-size: 9.5pt;
+  }
+  .recipient-block .facility {
+    font-weight: bold;
+  }
+  .recipient-block .name {
+    font-size: 13pt;
+    font-weight: bold;
+  }
+  .recipient-divider {
+    border: none;
+    border-top: 1px solid #bbb;
+    margin: 4mm 0;
+  }
   @media print {
     .print-toolbar { display: none; }
   }
@@ -161,6 +203,14 @@ export async function GET(
   <div class="print-toolbar">
     <button onclick="window.print()">PDF出力 / 印刷</button>
   </div>
+
+  ${doctorMaster || (report.prescribingClinic && report.prescribingDoctor) ? `
+  <div class="recipient-block">
+    ${doctorMaster?.address ? `<div class="address">${escapeHtml(doctorMaster.address)}</div>` : ''}
+    <div class="facility">${escapeHtml(report.prescribingClinic)}</div>
+    <div class="name">${escapeHtml(report.prescribingDoctor)} 先生 御侍史</div>
+  </div>
+  <hr class="recipient-divider" />` : ''}
 
   <h1>訪問薬剤管理指導 報告書</h1>
 
@@ -205,6 +255,13 @@ export async function GET(
       ${row('特記事項', report.specialNotes)}
     </tbody>
   </table>
+
+  ${report.patient.careManagerName ? `
+  <div style="margin-top:6mm; padding:3mm 5mm; border:1px dashed #aaa; font-size:9.5pt; color:#555;">
+    <strong>CC（情報共有先）：</strong>
+    ${careManagerMaster?.officeName ? `${escapeHtml(careManagerMaster.officeName)} ` : ''}${escapeHtml(report.patient.careManagerName)} 様
+    ${careManagerMaster?.address ? `<span style="margin-left:4mm;">${escapeHtml(careManagerMaster.address)}</span>` : ''}
+  </div>` : ''}
 
   <div class="signature">
     <div>
