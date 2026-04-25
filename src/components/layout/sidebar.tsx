@@ -12,6 +12,8 @@ import {
   List,
   Shield,
   Loader2,
+  FileText,
+  BookOpen,
 } from 'lucide-react';
 
 const navigation = [
@@ -19,6 +21,8 @@ const navigation = [
   { name: 'スケジュール一覧', href: '/events', icon: List },
   { name: '患者管理', href: '/patients', icon: Users },
   { name: '施設管理', href: '/facilities', icon: Building2 },
+  { name: '報告書一覧', href: '/reports', icon: FileText },
+  { name: 'マスタ管理', href: '/masters', icon: BookOpen },
   { name: '設定', href: '/settings', icon: Settings },
 ];
 

@@ -58,6 +58,8 @@ model Organization {
   facilities   Facility[]
   visitReports VisitReport[]
   visitPlans   VisitPlan[]
+  doctors      Doctor[]
+  careManagers CareManager[]
 
   @@index([code])
   @@index([isActive])
@@ -338,6 +340,44 @@ model PatientDocument {
   @@index([type])
   @@index([uploadedAt])
   @@map("patient_documents")
+}
+
+// ============================================
+// マスタデータ：医師・ケアマネージャー
+// ============================================
+
+model Doctor {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  clinicName     String   @map("clinic_name") @db.VarChar(200)
+  doctorName     String   @map("doctor_name") @db.VarChar(100)
+  phone          String?  @db.VarChar(20)
+  memo           String?  @db.VarChar(500)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("doctors")
+}
+
+model CareManager {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String   @db.VarChar(100)
+  officeName     String?  @map("office_name") @db.VarChar(200)
+  phone          String?  @db.VarChar(20)
+  memo           String?  @db.VarChar(500)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("care_managers")
 }
 
 // ============================================

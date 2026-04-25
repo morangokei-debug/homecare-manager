@@ -11,9 +11,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, Copy, Trash2, FileDown } from 'lucide-react';
+import { Loader2, Save, Copy, Trash2, FileDown, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+
+interface DoctorMaster {
+  id: string;
+  clinicName: string;
+  doctorName: string;
+}
 
 type ReportFields = {
   visitDate: string;
@@ -62,6 +68,11 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
   const [loading, setLoading] = useState(false);
   const [copying, setCopying] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [doctors, setDoctors] = useState<DoctorMaster[]>([]);
+
+  useEffect(() => {
+    fetch('/api/masters/doctors').then((r) => r.json()).then((d) => Array.isArray(d) && setDoctors(d));
+  }, []);
 
   // 既存報告書を読み込み
   useEffect(() => {
@@ -148,7 +159,14 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
         const err = await res.json();
         throw new Error(err.error || '保存に失敗しました');
       }
-      toast.success(reportId ? '報告書を更新しました' : '報告書を作成しました');
+      const saved = await res.json();
+      const savedId = reportId || saved.id;
+      toast.success(reportId ? '報告書を更新しました' : '報告書を作成しました', {
+        action: {
+          label: 'PDFを開く',
+          onClick: () => window.open(`/api/pdf/visit-report/${savedId}`, '_blank'),
+        },
+      });
       onSaved();
       onClose();
     } catch (e) {
@@ -214,21 +232,43 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label>処方医療機関</Label>
-              <Input
-                value={fields.prescribingClinic}
-                onChange={(e) => setField('prescribingClinic', e.target.value)}
-                placeholder="○○クリニック"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>処方医師</Label>
-              <Input
-                value={fields.prescribingDoctor}
-                onChange={(e) => setField('prescribingDoctor', e.target.value)}
-                placeholder="田中 一郎"
-              />
+            <div className="space-y-2 md:col-span-2">
+              <Label>処方医師（マスタから選択）</Label>
+              {doctors.length > 0 ? (
+                <div className="flex gap-2">
+                  <select
+                    className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                    value={doctors.find(d => d.doctorName === fields.prescribingDoctor && d.clinicName === fields.prescribingClinic)?.id || ''}
+                    onChange={(e) => {
+                      const doc = doctors.find((d) => d.id === e.target.value);
+                      if (doc) {
+                        setField('prescribingClinic', doc.clinicName);
+                        setField('prescribingDoctor', doc.doctorName);
+                      } else {
+                        setField('prescribingClinic', '');
+                        setField('prescribingDoctor', '');
+                      }
+                    }}
+                  >
+                    <option value="">-- 選択してください --</option>
+                    {doctors.map((d) => (
+                      <option key={d.id} value={d.id}>{d.doctorName}（{d.clinicName}）</option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  value={fields.prescribingClinic}
+                  onChange={(e) => setField('prescribingClinic', e.target.value)}
+                  placeholder="処方医療機関"
+                />
+                <Input
+                  value={fields.prescribingDoctor}
+                  onChange={(e) => setField('prescribingDoctor', e.target.value)}
+                  placeholder="処方医師名"
+                />
+              </div>
             </div>
           </div>
 

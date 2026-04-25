@@ -15,6 +15,12 @@ import { Loader2, Save, Copy, Trash2, FileDown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 
+interface DoctorMaster {
+  id: string;
+  clinicName: string;
+  doctorName: string;
+}
+
 type PlanFields = {
   planMonth: string;
   periodStart: string;
@@ -56,6 +62,11 @@ export function VisitPlanForm({ open, onClose, onSaved, patientId, planId }: Pro
   const [loading, setLoading] = useState(false);
   const [copying, setCopying] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [doctors, setDoctors] = useState<DoctorMaster[]>([]);
+
+  useEffect(() => {
+    fetch('/api/masters/doctors').then((r) => r.json()).then((d) => Array.isArray(d) && setDoctors(d));
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -136,7 +147,14 @@ export function VisitPlanForm({ open, onClose, onSaved, patientId, planId }: Pro
         const err = await res.json();
         throw new Error(err.error || '保存に失敗しました');
       }
-      toast.success(planId ? '計画書を更新しました' : '計画書を作成しました');
+      const saved = await res.json();
+      const savedId = planId || saved.id;
+      toast.success(planId ? '計画書を更新しました' : '計画書を作成しました', {
+        action: {
+          label: 'PDFを開く',
+          onClick: () => window.open(`/api/pdf/visit-plan/${savedId}`, '_blank'),
+        },
+      });
       onSaved();
       onClose();
     } catch (e) {
@@ -221,19 +239,39 @@ export function VisitPlanForm({ open, onClose, onSaved, patientId, planId }: Pro
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>処方医療機関</Label>
+          <div className="space-y-2">
+            <Label>処方医師（マスタから選択）</Label>
+            {doctors.length > 0 && (
+              <select
+                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                value={doctors.find(d => d.doctorName === fields.prescribingDoctor && d.clinicName === fields.prescribingClinic)?.id || ''}
+                onChange={(e) => {
+                  const doc = doctors.find((d) => d.id === e.target.value);
+                  if (doc) {
+                    setField('prescribingClinic', doc.clinicName);
+                    setField('prescribingDoctor', doc.doctorName);
+                  } else {
+                    setField('prescribingClinic', '');
+                    setField('prescribingDoctor', '');
+                  }
+                }}
+              >
+                <option value="">-- 選択してください --</option>
+                {doctors.map((d) => (
+                  <option key={d.id} value={d.id}>{d.doctorName}（{d.clinicName}）</option>
+                ))}
+              </select>
+            )}
+            <div className="grid grid-cols-2 gap-2">
               <Input
                 value={fields.prescribingClinic}
                 onChange={(e) => setField('prescribingClinic', e.target.value)}
+                placeholder="処方医療機関"
               />
-            </div>
-            <div className="space-y-2">
-              <Label>処方医師</Label>
               <Input
                 value={fields.prescribingDoctor}
                 onChange={(e) => setField('prescribingDoctor', e.target.value)}
+                placeholder="処方医師名"
               />
             </div>
           </div>
