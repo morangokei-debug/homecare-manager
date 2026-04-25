@@ -12,6 +12,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Save, Copy, Trash2, FileDown } from 'lucide-react';
+import { TemplateButtons } from './template-buttons';
+
+const PLAN_TEMPLATES = {
+  issuesAndGoals: [
+    '服薬コンプライアンスの維持・向上',
+    '副作用の早期発見・対応',
+    '残薬の適切な管理',
+    '薬物療法の効果確認',
+    '認知機能低下に対する服薬支援',
+  ],
+  guidanceDetails: [
+    '服薬状況・残薬の確認',
+    '薬効・副作用のモニタリング',
+    '一包化薬の提供と服薬指導',
+    '処方医への情報提供',
+    'ケアマネージャーへの情報共有',
+    '家族・介護者への服薬指導',
+  ],
+  considerations: [
+    '家族・介護者への情報提供を行う',
+    '処方医との連携を密にする',
+    'ケアマネージャーとの連携を図る',
+    '認知機能低下があるため介護者同席のもと実施',
+    '独居のため訪問時の安否確認も行う',
+  ],
+};
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -293,6 +319,7 @@ export function VisitPlanForm({ open, onClose, onSaved, patientId, planId }: Pro
               onChange={(e) => setField('issuesAndGoals', e.target.value)}
               placeholder="服薬コンプライアンスの維持、副作用の早期発見など"
             />
+            <TemplateButtons templates={PLAN_TEMPLATES.issuesAndGoals} onInsert={(t) => setField('issuesAndGoals', fields.issuesAndGoals ? `${fields.issuesAndGoals}　${t}` : t)} />
           </div>
 
           <div className="space-y-2">
@@ -303,6 +330,7 @@ export function VisitPlanForm({ open, onClose, onSaved, patientId, planId }: Pro
               onChange={(e) => setField('guidanceDetails', e.target.value)}
               placeholder="服薬状況の確認、薬効・副作用のモニタリング、一包化の提供など"
             />
+            <TemplateButtons templates={PLAN_TEMPLATES.guidanceDetails} onInsert={(t) => setField('guidanceDetails', fields.guidanceDetails ? `${fields.guidanceDetails}　${t}` : t)} />
           </div>
 
           <div className="space-y-2">
@@ -313,6 +341,7 @@ export function VisitPlanForm({ open, onClose, onSaved, patientId, planId }: Pro
               onChange={(e) => setField('considerations', e.target.value)}
               placeholder="家族・介護者への情報提供、医師・ケアマネとの連携など"
             />
+            <TemplateButtons templates={PLAN_TEMPLATES.considerations} onInsert={(t) => setField('considerations', fields.considerations ? `${fields.considerations}　${t}` : t)} />
           </div>
 
           <div className="flex justify-between pt-4 border-t">

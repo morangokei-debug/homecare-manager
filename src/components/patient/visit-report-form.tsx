@@ -12,6 +12,66 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Save, Copy, Trash2, FileDown, Printer } from 'lucide-react';
+import { TemplateButtons } from './template-buttons';
+
+const TEMPLATES: Record<string, string[]> = {
+  generalCondition: [
+    'バイタル安定、全身状態良好',
+    '食欲あり、睡眠良好',
+    '倦怠感を訴えている',
+    '体重減少あり',
+    '浮腫あり',
+  ],
+  medicationStatus: [
+    '残薬なし、服薬良好',
+    '飲み忘れなし',
+    '一包化により管理良好',
+    '残薬あり（約　日分）',
+    '介助者が管理、適切に服薬できている',
+  ],
+  sideEffects: [
+    '副作用の訴えなし',
+    '特記事項なし',
+    'めまいを訴えている',
+    '便秘を訴えている',
+    '皮膚症状あり（要観察）',
+  ],
+  treatmentEffect: [
+    '症状安定、効果良好',
+    '血圧コントロール良好',
+    '痛みの軽減あり',
+    '血糖コントロール良好',
+    '効果不十分、要医師相談',
+  ],
+  understandingLevel: [
+    '本人の理解良好',
+    '家族のサポートあり、適切に管理されている',
+    '認知機能低下により理解困難',
+    '本人・家族ともに理解良好',
+    '服薬に消極的、継続的な支援が必要',
+  ],
+  livingConditions: [
+    'ADL自立',
+    '要介護、介護者によるサポートあり',
+    '独居、ヘルパー利用中',
+    '施設入居中、スタッフが服薬管理',
+    'ADL低下あり、要見守り',
+  ],
+  guidanceContent: [
+    '服薬タイミングの確認を行った',
+    '薬の効果・副作用について説明した',
+    '一包化の提案を行った',
+    '残薬整理を行った',
+    '服薬カレンダーの活用を指導した',
+  ],
+  reportToDoctor: [
+    '特記事項なし',
+    '副作用疑いのため処方変更をご検討ください',
+    '残薬が多いため服薬状況の確認をお願いします',
+    '服薬アドヒアランス不良のため対応をご検討ください',
+    '状態安定、引き続き現在の処方継続をお願いします',
+  ],
+};
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -283,6 +343,7 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
                 onChange={(e) => setField('generalCondition', e.target.value)}
                 placeholder="バイタル、食事、睡眠など"
               />
+              <TemplateButtons templates={TEMPLATES.generalCondition} onInsert={(t) => setField('generalCondition', fields.generalCondition ? `${fields.generalCondition}　${t}` : t)} />
             </div>
             <div className="space-y-2">
               <Label>服薬状況（残薬・飲み忘れ等）</Label>
@@ -292,6 +353,7 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
                 onChange={(e) => setField('medicationStatus', e.target.value)}
                 placeholder="残薬○日、服薬コンプライアンス良好など"
               />
+              <TemplateButtons templates={TEMPLATES.medicationStatus} onInsert={(t) => setField('medicationStatus', fields.medicationStatus ? `${fields.medicationStatus}　${t}` : t)} />
             </div>
             <div className="space-y-2">
               <Label>副作用・有害事象</Label>
@@ -301,6 +363,7 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
                 onChange={(e) => setField('sideEffects', e.target.value)}
                 placeholder="特記事項なし / ○○を訴える"
               />
+              <TemplateButtons templates={TEMPLATES.sideEffects} onInsert={(t) => setField('sideEffects', fields.sideEffects ? `${fields.sideEffects}　${t}` : t)} />
             </div>
             <div className="space-y-2">
               <Label>薬物療法の効果</Label>
@@ -310,6 +373,7 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
                 onChange={(e) => setField('treatmentEffect', e.target.value)}
                 placeholder="血圧安定、痛み軽減など"
               />
+              <TemplateButtons templates={TEMPLATES.treatmentEffect} onInsert={(t) => setField('treatmentEffect', fields.treatmentEffect ? `${fields.treatmentEffect}　${t}` : t)} />
             </div>
             <div className="space-y-2">
               <Label>理解度・アドヒアランス</Label>
@@ -319,6 +383,7 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
                 onChange={(e) => setField('understandingLevel', e.target.value)}
                 placeholder="本人理解あり、家族によるサポートが必要など"
               />
+              <TemplateButtons templates={TEMPLATES.understandingLevel} onInsert={(t) => setField('understandingLevel', fields.understandingLevel ? `${fields.understandingLevel}　${t}` : t)} />
             </div>
             <div className="space-y-2">
               <Label>生活状況</Label>
@@ -328,6 +393,7 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
                 onChange={(e) => setField('livingConditions', e.target.value)}
                 placeholder="ADL、介護状況など"
               />
+              <TemplateButtons templates={TEMPLATES.livingConditions} onInsert={(t) => setField('livingConditions', fields.livingConditions ? `${fields.livingConditions}　${t}` : t)} />
             </div>
           </div>
 
@@ -340,6 +406,7 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
               onChange={(e) => setField('guidanceContent', e.target.value)}
               placeholder="服薬タイミングの確認、一包化の提案など"
             />
+            <TemplateButtons templates={TEMPLATES.guidanceContent} onInsert={(t) => setField('guidanceContent', fields.guidanceContent ? `${fields.guidanceContent}　${t}` : t)} />
           </div>
           <div className="space-y-2">
             <Label>医師への報告・提案事項</Label>
@@ -349,6 +416,7 @@ export function VisitReportForm({ open, onClose, onSaved, patientId, reportId, e
               onChange={(e) => setField('reportToDoctor', e.target.value)}
               placeholder="処方変更の提案、副作用疑いの報告など"
             />
+            <TemplateButtons templates={TEMPLATES.reportToDoctor} onInsert={(t) => setField('reportToDoctor', fields.reportToDoctor ? `${fields.reportToDoctor}　${t}` : t)} />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
